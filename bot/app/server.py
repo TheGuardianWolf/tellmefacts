@@ -21,7 +21,6 @@ class Server(object):
             '/' : {
                 'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
                 'tools.sessions.on': True,
-                'tools.response_headers.on': True,     
                 'tools.encode.encoding': 'utf-8',
                 'tools.encode.on': True,
                 'tools.response_headers.on': True,
