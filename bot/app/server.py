@@ -7,7 +7,7 @@ from app.controllers.RandomResponse import RandomResponse
 class Server(object):
     # Values for server paths
     root = path.dirname(inspect.getfile(app))
-    configPath = path.join(root, 'Config')
+    configPath = path.join(root, 'config')
 
     def __init__(self):
         environ.putenv('TZ', 'UTC')
