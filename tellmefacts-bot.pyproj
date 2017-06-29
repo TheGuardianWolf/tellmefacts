@@ -47,9 +47,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="bot\app\__init__.py" />
+    <Compile Include="bot\tests\test_RandomResponse.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="client\app\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bot\tests\pytest.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

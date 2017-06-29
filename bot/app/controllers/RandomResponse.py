@@ -9,19 +9,15 @@ class RandomResponse(object):
 
         try:
             fp = open(responsesFile, 'r')
-            responses = loads(fp)
+            responses = loads(fp.read())
             assert isinstance(responses, list)
             self.responses = responses
         except (FileNotFoundError, JSONDecodeError, AssertionError):
-            cherrypy.log.error('No responses config loaded, using defaults.', severity=2)
-
-    @cherrypy.expose
-    def index(self):
-        raise cherrypy.HTTPError(400, 'Request type incorrect or lacking parameters.')
+            print('WARNING: No responses config loaded, using defaults.')
 
     @cherrypy.tools.accept(media='text/plain')
     @cherrypy.tools.json_out()
     def GET(self, q):
         return {
-            'response': self.responses[randint(0, len(self.responses))]
+            'response': self.responses[randint(0, len(self.responses) - 1)]
         }
