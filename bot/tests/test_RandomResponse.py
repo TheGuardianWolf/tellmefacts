@@ -1,5 +1,5 @@
 from cherrypy.test import helper
-from json import loads
+from json import loads, JSONDecodeError
 from app.Server import Server
 
 
@@ -14,7 +14,11 @@ class test_RandomResponse(helper.CPWebCase):
             headers=[('Content-Type', 'text/plain')])
         self.assertStatus('200 OK')
         self.assertHeader('Content-Type', 'application/json')
-        deserialisedBody = loads(self.body)
+        try:
+            deserialisedBody = loads(self.body)
+        except JSONDecodeError:
+            raise AssertionError('Response body does not contain a JSON object.')
+
         assert isinstance(deserialisedBody, dict)
         assert 'response' in deserialisedBody
 
