@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from Client import Client
+from client import MultibotClient
 
 def main():
-    server = Server()
-    server.start()
+    c = MultibotClient()
+    c.start()
 
 
 if __name__ == '__main__':

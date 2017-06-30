@@ -1,9 +1,9 @@
 from chatterbot.logic import LogicAdapter
 
 
-class MultibotRelayAdapter(LogicAdapter):
+class MultibotRelay(LogicAdapter):
     def __init__(self, **kwargs):
-        super(MyLogicAdapter, self).__init__(**kwargs)
+        super(MultibotRelay, self).__init__(**kwargs)
 
     def can_process(self, statement):
         if statement.text.startswith('Hey Mike'):

@@ -1,6 +1,6 @@
 from chatterbot import ChatBot
 
-class Client(object):
+class MultibotClient(object):
     """description of class"""
     def __init__(self):
         self.bot = ChatBot(
@@ -8,7 +8,7 @@ class Client(object):
             input_adapter='chatterbot.input.TerminalAdapter',
             output_adapter='chatterbot.output.TerminalAdapter',
             logic_adapters=[
-                'app.adapters.MultibotRelayAdapter'
+                'client.adapters.MultibotRelay'
             ]
         )
 

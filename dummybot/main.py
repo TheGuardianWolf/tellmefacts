@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from dummybot.Server import Server
+from dummybot import Server
 
 def main():
-    server = Server()
-    server.start()
+    s = Server()
+    s.start()
 
 
 if __name__ == '__main__':

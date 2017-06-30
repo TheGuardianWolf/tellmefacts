@@ -2,7 +2,7 @@ import cherrypy
 import inspect
 from importlib import import_module
 from os import path, environ
-from dummybot.controllers.RandomResponse import RandomResponse
+from .controllers import RandomResponse
 
 class Server(object):
     # Values for server paths
