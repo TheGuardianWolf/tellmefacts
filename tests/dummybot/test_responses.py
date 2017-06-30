@@ -1,6 +1,6 @@
 from cherrypy.test import helper
 from json import loads, JSONDecodeError
-from dummybot.Server import Server
+from dummybot import Server
 
 
 class test_responses(helper.CPWebCase):

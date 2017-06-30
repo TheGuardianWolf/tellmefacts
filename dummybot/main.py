@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from dummybot import Server
 
+
 def main():
     s = Server()
     s.start()
