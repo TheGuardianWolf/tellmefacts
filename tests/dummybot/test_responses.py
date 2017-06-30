@@ -1,12 +1,11 @@
 from cherrypy.test import helper
 from json import loads, JSONDecodeError
-from app.Server import Server
+from dummybot.Server import Server
 
 
-class test_RandomResponse(helper.CPWebCase):
+class test_responses(helper.CPWebCase):
     def setup_server():
         s = Server()
-        s.setup()
 
     def test_recieve_random_phrase(self):
         self.getPage(

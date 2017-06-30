@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from app.Server import Server
+from Client import Client
 
 def main():
     server = Server()

@@ -1,12 +1,12 @@
 import cherrypy
 import inspect
-import app
+from importlib import import_module
 from os import path, environ
-from app.controllers.RandomResponse import RandomResponse
+from dummybot.controllers.RandomResponse import RandomResponse
 
 class Server(object):
     # Values for server paths
-    root = path.dirname(inspect.getfile(app))
+    root = path.dirname(inspect.getfile(import_module('dummybot')))
     configPath = path.join(root, 'config')
 
     def __init__(self):
@@ -29,19 +29,12 @@ class Server(object):
             }
         }
 
-        self.finishedSetup = False;
-
-    def setup(self):
         randomResponse = RandomResponse(path.join(Server.configPath, 'responses.json'))
         cherrypy.tree.mount(None, '/', config=self.routeConfig)
         cherrypy.tree.mount(randomResponse, '/askmeanything', config=self.routeConfig)
-        self.finishedSetup = True
 
     # a blocking call that starts the web application listening for requests
     def start(self):
-        if not self.finishedSetup:
-            self.setup()
-
         try:
             cherrypy.config.update(self.globalConfig)
             cherrypy.engine.signal_handler.subscribe()
