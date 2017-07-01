@@ -1,5 +1,4 @@
 class RelayState(object):
     """description of class"""
-    def init(self):
+    def __init__(self):
         self.bot = None
-

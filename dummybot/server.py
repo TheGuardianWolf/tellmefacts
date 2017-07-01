@@ -1,55 +1,71 @@
 import cherrypy
 import inspect
+import sys
 from json import loads, JSONDecodeError
 from importlib import import_module
 from os import path, environ
 from .controllers import RandomResponse
 
+
 class Server(object):
     # Values for server paths
     root = path.dirname(inspect.getfile(import_module('dummybot')))
-    configPath = path.join(root, 'config')
+    config_path = path.join(root, 'config')
 
-    def __init__(self):
+    def __init__(self, config_path=config_path):
+        self.__config(config_path)
+        self.__setup()
+
+    def __config(self, config_path):
         environ.putenv('TZ', 'UTC')
-        self.serverConfig = {
-            'server.socket_host': '0.0.0.0', 
+        self.server_config = {
+            'server.socket_host': '0.0.0.0',
             'server.socket_port': 80,
-            'request.show_tracebacks': False 
+            'request.show_tracebacks': False
         }
 
-        self.routeConfig = {
-            '/' : {
-                'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
-                'tools.sessions.on': True,
-                'tools.encode.encoding': 'utf-8',
-                'tools.encode.on': True,
-                'tools.response_headers.on': True,
-                'tools.response_headers.headers': [('Content-Type', 'text/plain;charset=utf-8')],
-                'response.timeout': 10
+        self.route_config = {
+            '/': {
+                'request.dispatch':
+                cherrypy.dispatch.MethodDispatcher(),
+                'tools.sessions.on':
+                True,
+                'tools.encode.encoding':
+                'utf-8',
+                'tools.encode.on':
+                True,
+                'tools.response_headers.on':
+                True,
+                'tools.response_headers.headers':
+                [('Content-Type', 'text/plain;charset=utf-8')],
+                'response.timeout':
+                10
             }
         }
 
         responses = ['The sky is blue.', 'Water is wet.', 'Rocks are hard.']
-
         try:
-            fp = open(path.join(Server.configPath, 'responses.json'), 'r')
+            fp = open(path.join(config_path, 'responses.json'), 'r')
             responses = loads(fp.read())
             fp.close()
             assert isinstance(responses, list)
         except (FileNotFoundError, JSONDecodeError, AssertionError):
-            print('WARNING: No responses config loaded, using defaults.')
+            raise Warning('No responses config loaded, using defaults.')
+        self.responses = responses
 
-        randomResponse = RandomResponse(responses)
-        cherrypy.tree.mount(None, '/', config=self.routeConfig)
-        cherrypy.tree.mount(randomResponse, '/askmeanything', config=self.routeConfig)
+    def __setup(self):
+        random_response = RandomResponse(self.responses)
+        cherrypy.tree.mount(None, '/', config=self.route_config)
+        cherrypy.tree.mount(
+            random_response, '/askmeanything', config=self.route_config)
 
     # a blocking call that starts the web application listening for requests
     def start(self):
+        cherrypy.config.update(self.server_config)
+        cherrypy.engine.signal_handler.subscribe()
+        cherrypy.engine.console_control_handler.subscribe()
+
         try:
-            cherrypy.config.update(self.serverConfig)
-            cherrypy.engine.signal_handler.subscribe()
-            cherrypy.engine.console_control_handler.subscribe()
             cherrypy.engine.start()
         except:
             sys.exit(1)
@@ -59,4 +75,3 @@ class Server(object):
     # stops the web application
     def stop(self):
         cherrypy.engine.stop()
-

@@ -32,17 +32,15 @@
     <Folder Include="dummybot\controllers\" />
     <Folder Include="dummybot\controllers\__pycache__\" />
     <Folder Include="dummybot\__pycache__\" />
-    <Folder Include="tests\" />
-    <Folder Include="tests\dummybot\" />
-    <Folder Include="tests\dummybot\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="client\logic\command_adapter.py" />
     <Compile Include="client\logic\multibot_relay_adapter.py" />
     <Compile Include="client\logic\__init__.py" />
     <Compile Include="client\multibot_client.py" />
-    <Compile Include="client\main.py" />
     <Compile Include="client\services\bot_connection.py" />
+    <Compile Include="client\services\keyword_command.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="client\services\relay_state.py">
       <SubType>Code</SubType>
     </Compile>
@@ -50,10 +48,8 @@
     <Compile Include="client\__init__.py" />
     <Compile Include="dummybot\controllers\random_response.py" />
     <Compile Include="dummybot\controllers\__init__.py" />
-    <Compile Include="dummybot\main.py" />
     <Compile Include="dummybot\server.py" />
     <Compile Include="dummybot\__init__.py" />
-    <Compile Include="tests\dummybot\test_responses.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="client\config\bots.json" />
@@ -64,8 +60,6 @@
     <Content Include="dummybot\controllers\__pycache__\__init__.cpython-36.pyc" />
     <Content Include="dummybot\__pycache__\Server.cpython-36.pyc" />
     <Content Include="dummybot\__pycache__\__init__.cpython-36.pyc" />
-    <Content Include="tests\dummybot\__pycache__\test_responses.cpython-36-PYTEST.pyc" />
-    <Content Include="tests\pytest.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

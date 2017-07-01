@@ -1,2 +1,4 @@
 *
 !.gitignore
+!config.py
+!__init__.py

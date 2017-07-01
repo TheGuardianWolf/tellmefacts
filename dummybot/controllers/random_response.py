@@ -1,5 +1,4 @@
 import cherrypy
-from json import loads, dumps, JSONDecodeError
 from random import randint
 
 @cherrypy.expose

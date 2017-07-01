@@ -3,9 +3,12 @@ from json import loads, JSONDecodeError
 from dummybot import Server
 
 
-class test_responses(helper.CPWebCase):
+class DummybotTests(helper.CPWebCase):
     def setup_server():
         s = Server()
+
+    def test_response_config(self):
+        pass
 
     def test_recieve_random_phrase(self):
         self.getPage(
@@ -13,13 +16,10 @@ class test_responses(helper.CPWebCase):
             headers=[('Content-Type', 'text/plain')])
         self.assertStatus('200 OK')
         self.assertHeader('Content-Type', 'application/json')
-        try:
+        with self.assertRaises(JSONDecodeError):
             deserialisedBody = loads(self.body)
-        except JSONDecodeError:
-            raise AssertionError('Response body does not contain a JSON object.')
-
-        assert isinstance(deserialisedBody, dict)
-        assert 'response' in deserialisedBody
+        self.assertTrue(isinstance(deserialisedBody, dict))
+        self.assertTrue('response' in deserialisedBody)
 
     def test_different_method(self):
         """
