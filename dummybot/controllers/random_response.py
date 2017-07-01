@@ -4,16 +4,11 @@ from random import randint
 
 @cherrypy.expose
 class RandomResponse(object):
-    def __init__(self, responsesFile):
-        self.responses = ['The sky is blue.', 'Water is wet.', 'Rocks are hard.']
+    def __init__(self, responses):
+        if not isinstance(responses, list):
+            raise TypeError('Responses must be in a list.')
 
-        try:
-            fp = open(responsesFile, 'r')
-            responses = loads(fp.read())
-            assert isinstance(responses, list)
-            self.responses = responses
-        except (FileNotFoundError, JSONDecodeError, AssertionError):
-            print('WARNING: No responses config loaded, using defaults.')
+        self.responses = responses
 
     @cherrypy.tools.accept(media='text/plain')
     @cherrypy.tools.json_out()
