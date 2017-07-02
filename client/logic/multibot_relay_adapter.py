@@ -16,43 +16,32 @@ class MultibotRelayAdapter(LogicAdapter):
             raise ValueError(('No bot connections have been provided.'))
 
         self.commands = [
-            KeywordCommand(
-                'list',
-                False,
-                self.list
-            ),
-            KeywordCommand(
-                'start_session',
-                True,
-                self.start_session
-            ),
-            KeywordCommand(
-                'end_session',
-                False,
-                self.end_session
-            )
+            KeywordCommand('list', False, True, self.list),
+            KeywordCommand('start_session', True, False, self.start_session),
+            KeywordCommand('end_session', False, False, self.end_session)
         ]
 
     def process(self, statement):
         confidence = 1
         response_statement = Statement('')
 
-        relay_command = None
-        result = RelayCommand.match(statement.text)
+        keyword_command = None
+        result = KeywordCommand.match(statement.text)
 
         if result is not None:
             for command in self.commands:
                 if command.keyword == result.group(1):
-                    if command.has_args:
-                        if len(result.group) > 0:
-                            (confidence, response_statement) = relay_command.handler(result.group(2))
-                    else:
-                        if len(result.group) == 0:
-                            (confidence, response_statement) = relay_command.handler()
-                    break
+                    if self.state.bot is None or not command.session_ignore: 
+                        if command.has_args:
+                            if len(result.group(2)) > 0:
+                                return command.handler(result.group(2))
+                        else:
+                            if len(result.group(2)) == 0:
+                                return command.handler()
+                        break
 
-        if relay_command is None and self.state.bot is not None:
-            (confidence, response_statement) = self.handle_chat(statement.text)
+        if keyword_command is None and self.state.bot is not None:
+            (confidence, response_statement) = self.bot_request(statement.text)
         else:
             confidence = 1
             response_statement = Statement(
@@ -61,7 +50,7 @@ class MultibotRelayAdapter(LogicAdapter):
                  'type \'list\' for a list of available bots.'))
         return confidence, response_statement
 
-    def handle_chat(self, text):
+    def bot_request(self, text):
         confidence = 1
         # Make a request to the temperature API
         try:
@@ -86,11 +75,16 @@ class MultibotRelayAdapter(LogicAdapter):
         return (1, Statement(statement))
 
     def start_session(self, args):
-        for bot in self.bot_connections:
-            if bot.name == args:
-                self.state.bot = bot
-                return (confidence, Statement(
-                    'You are now chatting with {}.'.format(bot.name)))
+        if self.state.bot is None:
+            for bot in self.bot_connections:
+                if bot.name == args:
+                    self.state.bot = bot
+                    return (1, Statement(
+                        'You are now chatting with {}.'.format(bot.name)))
+        else:
+            return (1, Statement(
+                'You are already in a chat session with {}!'.format(self.state.bot.name)))
+
         return (1, Statement(
             ('Sorry, no bot with that name was found. Type \'list\' to '
                 'see available bots.')
