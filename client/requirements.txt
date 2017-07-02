@@ -1,0 +1,4 @@
+requests
+cherrypy
+chatterbot
+pytest

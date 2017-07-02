@@ -1,6 +1,6 @@
 import cherrypy
-import inspect
 import sys
+from inspect import getfile
 from warnings import warn
 from json import loads, JSONDecodeError
 from importlib import import_module
@@ -10,7 +10,7 @@ from .controllers import RandomResponse
 
 class Server(object):
     # Values for server paths
-    root = path.dirname(inspect.getfile(import_module('dummybot')))
+    root = path.dirname(getfile(import_module('dummybot')))
     config_path = path.join(root, 'config')
 
     def __init__(self, config_path=config_path):
