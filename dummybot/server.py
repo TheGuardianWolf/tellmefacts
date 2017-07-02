@@ -1,6 +1,7 @@
 import cherrypy
 import inspect
 import sys
+from warnings import warn
 from json import loads, JSONDecodeError
 from importlib import import_module
 from os import path, environ
@@ -50,7 +51,7 @@ class Server(object):
             fp.close()
             assert isinstance(responses, list)
         except (FileNotFoundError, JSONDecodeError, AssertionError):
-            raise Warning('No responses config loaded, using defaults.')
+            warn('No responses config loaded, using defaults.', Warning)
         self.responses = responses
 
     def __setup(self):
