@@ -3,6 +3,7 @@ from importlib import import_module
 from os import path
 from json import loads
 from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
 from .services import RelayState, BotConnection
 
 
@@ -17,7 +18,7 @@ class MultibotClient(object):
 
         self.bot = ChatBot(
             'Multibot',
-            database=path.join(self.data_path, '/database.db'),
+            database=path.join(data_path, 'database.db'),
             read_only=True,
             silence_performance_warning=True,
             # storage_adapter='chatterbot.storage.SQLStorageAdapter',
@@ -30,9 +31,10 @@ class MultibotClient(object):
                     'state': self.state
                 }
             ],
-            trainer='chatterbot.trainers.ListTrainer',
-            training_data=['placeholder']
         )
+
+        self.bot.set_trainer(ListTrainer)
+        self.bot.train(['placeholder'])
 
     def __config(self):
         self.state = RelayState()

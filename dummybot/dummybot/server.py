@@ -64,7 +64,7 @@ class Server(object):
     def start(self):
         cherrypy.config.update(self.server_config)
         cherrypy.engine.signal_handler.subscribe()
-        cherrypy.engine.console_control_handler.subscribe()
+        #cherrypy.engine.console_control_handler.subscribe()
 
         try:
             cherrypy.engine.start()
