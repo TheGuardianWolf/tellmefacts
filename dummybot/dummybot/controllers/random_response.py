@@ -1,6 +1,7 @@
 import cherrypy
 from random import randint
 
+
 @cherrypy.expose
 class RandomResponse(object):
     def __init__(self, responses):
@@ -12,6 +13,7 @@ class RandomResponse(object):
     @cherrypy.tools.accept(media='text/plain')
     @cherrypy.tools.json_out()
     def GET(self, q):
+        i = randint(0, len(self.responses) - 1)
         return {
-            'response': self.responses[randint(0, len(self.responses) - 1)]
+            'response': '#{} {}'.format(i, self.responses[i])
         }
