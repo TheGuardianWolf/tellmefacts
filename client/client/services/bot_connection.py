@@ -10,13 +10,13 @@ class BotConnection(object):
         self.url = url
 
     def ask(self, question):
-        response = get(self.url + '/askmeanything', timeout=1, params={
-            'q': question
-        })
-
         try:
+            response = get(self.url + '/askmeanything', timeout=1, params={
+                'q': question
+            })
+
             response_text = loads(response.text)['response']
-        except (JSONDecodeError, KeyError):
-            raise RequestException('Bot returned an invalid response.')
+        except (JSONDecodeError, KeyError, RequestException):
+            raise ValueError('Bot returned an invalid response.')
 
         return (response.status_code, response_text)

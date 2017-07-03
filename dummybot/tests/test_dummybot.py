@@ -1,14 +1,19 @@
 from cherrypy.test import helper
-from json import loads, JSONDecodeError
+from json import loads
 from dummybot import Server
+from tempfile import TemporaryDirectory
+from json import dumps
+from os import path
 
 
 class DummybotTests(helper.CPWebCase):
-    def setup_server():
-        s = Server()
-
-    def test_response_config(self):
-        pass
+    def setup_server(self):
+        temp_dir = TemporaryDirectory()
+        responses = dumps(['test'])
+        fp = open(path.join(temp_dir.name, 'responses.json'), 'w')
+        fp.write(responses)
+        fp.close()
+        self.s = Server(config_path=temp_dir.name)
 
     def test_recieve_random_phrase(self):
         self.getPage(
@@ -16,9 +21,8 @@ class DummybotTests(helper.CPWebCase):
             headers=[('Content-Type', 'text/plain')])
         self.assertStatus('200 OK')
         self.assertHeader('Content-Type', 'application/json')
-        with self.assertRaises(JSONDecodeError):
-            deserialisedBody = loads(self.body)
-        self.assertTrue(isinstance(deserialisedBody, dict))
+        deserialisedBody = loads(self.body)
+        self.assertIsInstance(deserialisedBody, dict)
         self.assertTrue('response' in deserialisedBody)
 
     def test_different_method(self):

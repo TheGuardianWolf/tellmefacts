@@ -1,8 +1,8 @@
 version: '3'
 services:
     client:
-        build: ./client
-        command: python ./client/run_client.py
+        build: client
+        command: python client/run_client.py
         # command: /bin/sh
         volumes:
             - '.:/client'
@@ -11,8 +11,8 @@ services:
         stdin_open: true
         tty: true
     dummybot:
-        build: ./dummybot
-        command: python ./dummybot/run_dummybot.py
+        build: dummybot
+        command: python dummybot/run_dummybot.py
         ports:
             - '80'
         volumes:

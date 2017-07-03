@@ -1,6 +1,5 @@
 from chatterbot.logic import LogicAdapter
 from chatterbot.conversation import Statement
-from requests.exceptions import RequestException
 from ..services import KeywordCommand
 
 
@@ -16,7 +15,7 @@ class MultibotRelayAdapter(LogicAdapter):
             raise ValueError(('No bot connections have been provided.'))
 
         self.commands = [
-            KeywordCommand('list', False, True, self.list),
+            KeywordCommand('list', False, False, self.list),
             KeywordCommand('start_session', True, False, self.start_session),
             KeywordCommand('end_session', False, False, self.end_session)
         ]
@@ -31,7 +30,7 @@ class MultibotRelayAdapter(LogicAdapter):
         if result is not None:
             for command in self.commands:
                 if command.keyword == result.group(1):
-                    if self.state.bot is None or not command.session_ignore: 
+                    if self.state.bot is None or not command.session_ignore:
                         if command.has_args:
                             if len(result.group(2)) > 0:
                                 return command.handler(result.group(2))
@@ -52,14 +51,14 @@ class MultibotRelayAdapter(LogicAdapter):
 
     def bot_request(self, text):
         confidence = 1
-        # Make a request to the temperature API
+
         try:
             (status, response) = self.state.bot.ask(text)
             assert status == 200
         except AssertionError:
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: {})'.format(str(status)))
-        except RequestException:
+        except ValueError:
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: Connection not established)')
 
@@ -70,7 +69,7 @@ class MultibotRelayAdapter(LogicAdapter):
     def list(self):
         statement = ''
         for i, bot in enumerate(self.bot_connections):
-            statement += '{}. {}\n'.format(str(i), bot.name)
+            statement += '{}. {}\n'.format(str(i) + 1, bot.name)
         statement = statement.rstrip('\n')
         return (1, Statement(statement))
 
@@ -82,18 +81,21 @@ class MultibotRelayAdapter(LogicAdapter):
                     return (1, Statement(
                         'You are now chatting with {}.'.format(bot.name)))
         else:
-            return (1, Statement(
-                'You are already in a chat session with {}!'.format(self.state.bot.name)))
+            return (
+                1,
+                Statement('You are already in a chat session with {}!'.format(
+                    self.state.bot.name)))
 
         return (1, Statement(
             ('Sorry, no bot with that name was found. Type \'list\' to '
-                'see available bots.')
-        ))
+             'see available bots.')))
 
     def end_session(self):
         if self.state.bot is None:
-            return (1, Statement('You are currently not in an active session.'))
+            return (1,
+                    Statement('You are currently not in an active session.'))
         else:
             bot_name = self.state.bot.name
             self.state.bot = None
-            return (1, Statement('Chat session with {} ended.'.format(bot_name)))
+            return (1,
+                    Statement('Chat session with {} ended.'.format(bot_name)))

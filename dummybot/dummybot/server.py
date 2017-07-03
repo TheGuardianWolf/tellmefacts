@@ -46,7 +46,10 @@ class Server(object):
 
         responses = ['The sky is blue.', 'Water is wet.', 'Rocks are hard.']
         try:
-            fp = open(path.join(config_path, 'responses.json'), 'r')
+            fp = open(
+                    path.join(config_path, 'responses.json'),
+                    'r',
+                    encoding='utf8')
             responses = loads(fp.read())
             fp.close()
             assert isinstance(responses, list)
@@ -64,7 +67,11 @@ class Server(object):
     def start(self):
         cherrypy.config.update(self.server_config)
         cherrypy.engine.signal_handler.subscribe()
-        #cherrypy.engine.console_control_handler.subscribe()
+
+        try:
+            cherrypy.engine.console_control_handler.subscribe()
+        except AttributeError:
+            pass
 
         try:
             cherrypy.engine.start()
