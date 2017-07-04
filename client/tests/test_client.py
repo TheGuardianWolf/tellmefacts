@@ -59,24 +59,24 @@ class ClientTests(TestCase):
 
     def test_simple_chat(self):
         self.assertEqual(
-            self.query_bot('list'), ('1. dummybot_1\n'
-                                     '2. dummybot_2\n'
-                                     '3. dummybot_3'))
+            self.query_bot('list'), ('1. Interesting Facts\n'
+                                     '2. Strange Facts\n'
+                                     '3. Unusual Facts'))
         self.assertEqual(
-            self.query_bot('start_session dummybot_1'),
-            'You are now chatting with dummybot_1.')
+            self.query_bot('start_session Interesting Facts'),
+            'You are now chatting with Interesting Facts.')
         if self.bot_availablity[0]:
             rand = self.random_string()
             self.assertIsInstance(str(self.query_bot(rand)), str)
         self.assertEqual(
             self.query_bot('end_session'),
-            'Chat session with dummybot_1 ended.')
+            'Chat session with Interesting Facts ended.')
 
     def test_multibot_chat(self):
         self.assertEqual(
-            self.query_bot('list'), ('1. dummybot_1\n'
-                                     '2. dummybot_2\n'
-                                     '3. dummybot_3'))
+            self.query_bot('list'), ('1. Interesting Facts\n'
+                                     '2. Strange Facts\n'
+                                     '3. Unusual Facts'))
 
         for connection in self.client.bot_connections:
             self.assertEqual(
@@ -101,8 +101,8 @@ class ClientTests(TestCase):
             self.query_bot('end_session'),
             'You are currently not in an active session.')
         self.assertEqual(
-            self.query_bot('start_session dummybot_3'),
-            'You are now chatting with dummybot_3.')
+            self.query_bot('start_session Unusual Facts'),
+            'You are now chatting with Unusual Facts.')
         self.assertEqual(
-            self.query_bot('start_session dummybot_2'),
-            'You are already in a chat session with dummybot_3!')
+            self.query_bot('start_session Strange Facts'),
+            'You are already in a chat session with Unusual Facts!')
