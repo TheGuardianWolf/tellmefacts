@@ -22,7 +22,8 @@ class DummybotTests(helper.CPWebCase):
         self.assertHeader('Content-Type', 'application/json')
         deserialisedBody = loads(self.body)
         self.assertIsInstance(deserialisedBody, dict)
-        self.assertTrue('response' in deserialisedBody)
+        self.assertIn('response', deserialisedBody)
+        self.assertEqual(deserialisedBody['response'], 'test')
 
     def test_ask_random(self):
         params = urlencode({'q': 'Hello world'})
