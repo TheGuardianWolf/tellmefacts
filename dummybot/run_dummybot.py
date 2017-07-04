@@ -13,7 +13,11 @@ def main():
     args = parser.parse_args()
 
     if args.with_tests is True:
-        pytest.main(['-s'])
+        result = pytest.main()
+        try:
+            assert result == 0
+        except AssertionError:
+            raise AssertionError('Tests failed, aborting start.')
 
     s = Server(config_path=args.config_dir)
     s.start()

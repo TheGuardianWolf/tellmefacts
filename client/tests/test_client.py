@@ -4,7 +4,6 @@ from random import randint
 from tempfile import TemporaryDirectory
 from json import dumps
 from os import path
-from chatterbot.conversation import Statement
 from requests import get
 from requests.exceptions import RequestException
 
@@ -59,20 +58,46 @@ class ClientTests(TestCase):
                                      '2. dummybot_2\n'
                                      '3. dummybot_3'))
         self.assertEqual(
-            self.query_bot('start_session dummybot_1'), ('1. dummybot_1\n'
-                                                         '2. dummybot_2\n'
-                                                         '3. dummybot_3'))
+            self.query_bot('start_session dummybot_1'),
+            'You are now chatting with dummybot_1.')
         if self.bot_availablity[0]:
             rand = self.random_string()
             self.assertIsInstance(str(self.query_bot(rand)), str)
-
         self.assertEqual(
-            self.query_bot('end_session'), ('1. dummybot_1\n'
-                                                         '2. dummybot_2\n'
-                                                         '3. dummybot_3'))
+            self.query_bot('end_session'),
+            'Chat session with dummybot_1 ended.')
 
     def test_multibot_chat(self):
-        pass
+        self.assertEqual(
+            self.query_bot('list'), ('1. dummybot_1\n'
+                                     '2. dummybot_2\n'
+                                     '3. dummybot_3'))
+
+        for connection in self.client.bot_connections:
+            self.assertEqual(
+                self.query_bot('start_session {}'.format(connection.name)),
+                'You are now chatting with {}.'.format(connection.name))
+            if self.bot_availablity[0]:
+                rand = self.random_string()
+                self.assertIsInstance(str(self.query_bot(rand)), str)
+            self.assertEqual(
+                self.query_bot('end_session'),
+                'Chat session with {} ended.'.format(connection.name))
 
     def test_invalid_chat(self):
-        pass
+        if self.bot_availablity[0]:
+            rand = self.random_string()
+            self.assertEqual(
+                self.query_bot(rand),
+                ('You are currently not connected to any bot. '
+                 'Connect to a bot with \'start_session <bot_name>\' or '
+                 'type \'list\' for a list of available bots.'))
+        self.assertEqual(
+            self.query_bot('end_session'),
+            'You are currently not in an active session.')
+        self.assertEqual(
+            self.query_bot('start_session dummybot_3'),
+            'You are now chatting with dummybot_3.')
+        self.assertEqual(
+            self.query_bot('start_session dummybot_2'),
+            'You are already in a chat session with dummybot_3!')
