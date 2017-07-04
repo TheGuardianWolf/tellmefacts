@@ -1,0 +1,29 @@
+version: '3'
+services:
+    tester:
+        build: client
+        command: python client/run_client.py
+        # command: /bin/sh
+        volumes:
+            - '.:/tester'
+        links:
+            - dummybot
+        stdin_open: true
+        tty: true
+    client:
+        build: client
+        command: python client/run_client.py
+        # command: /bin/sh
+        volumes:
+            - '.:/client'
+        links:
+            - dummybot
+        stdin_open: true
+        tty: true
+    dummybot:
+        build: dummybot
+        command: python dummybot/run_dummybot.py
+        ports:
+            - '80'
+        volumes:
+            - '.:/dummybot'

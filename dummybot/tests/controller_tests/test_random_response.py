@@ -12,10 +12,10 @@ class RandomResponseTests(TestCase):
 
     def test_get(self):
         response_object = self.random_response.GET(str(randint(0, 9000)))
-        
+
         self.assertIsInstance(response_object, dict)
         self.assertIn('response', response_object)
-        
+
         self.assertIsInstance(response_object['response'], str)
         cap = self.response_template.match(response_object['response'])
         self.assertIn(cap.group(2), self.responses)

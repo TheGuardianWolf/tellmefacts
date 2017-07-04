@@ -1,5 +1,6 @@
 from re import compile
 
+
 class KeywordCommand(object):
     command_regexp = compile('^([^ ]+) ?(.*)$')
 
@@ -13,3 +14,8 @@ class KeywordCommand(object):
         self.session_ignore = session_ignore
         self.handler = handler
 
+    def handle(self, args=None):
+        if self.has_args:
+            return self.handler(args)
+        else:
+            return self.handler()

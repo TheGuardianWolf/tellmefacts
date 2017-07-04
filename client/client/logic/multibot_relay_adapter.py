@@ -31,13 +31,8 @@ class MultibotRelayAdapter(LogicAdapter):
             for command in self.commands:
                 if command.keyword == result.group(1):
                     if self.state.bot is None or not command.session_ignore:
-                        if command.has_args:
-                            if len(result.group(2)) > 0:
-                                return command.handler(result.group(2))
-                        else:
-                            if len(result.group(2)) == 0:
-                                return command.handler()
-                        break
+                        return command.handle(result.group(2))
+                    break
 
         if keyword_command is None and self.state.bot is not None:
             (confidence, response_statement) = self.bot_request(statement.text)
@@ -73,8 +68,13 @@ class MultibotRelayAdapter(LogicAdapter):
         statement = statement.rstrip('\n')
         return (1, Statement(statement))
 
-    def start_session(self, args):
+    def start_session(self, args=None):
         if self.state.bot is None:
+            if args is None or len(args) == 0:
+                return (1, Statement(
+                    ('No bot name was provided. Type \'list\' to see available'
+                     ' bots.')))
+
             for bot in self.bot_connections:
                 if bot.name == args:
                     self.state.bot = bot

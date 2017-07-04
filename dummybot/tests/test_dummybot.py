@@ -15,15 +15,64 @@ class DummybotTests(helper.CPWebCase):
         fp.close()
         self.s = Server(config_path=temp_dir.name)
 
-    def test_recieve_random_phrase(self):
-        self.getPage(
-            '/askmeanything?q=Hello%20world',
-            headers=[('Content-Type', 'text/plain')])
+    def check_response(self):
         self.assertStatus('200 OK')
         self.assertHeader('Content-Type', 'application/json')
         deserialisedBody = loads(self.body)
         self.assertIsInstance(deserialisedBody, dict)
         self.assertTrue('response' in deserialisedBody)
+
+    def test_ask_random(self):
+        self.getPage(
+            '/askmeanything?q=Hello%20world',
+            headers=[('Content-Type', 'text/plain')])
+        self.check_response()
+
+    def test_ask_unicode(self):
+        """
+        Test the case that a unicode string is passed in.
+        """
+        self.getPage(
+            '/askmeanything?q=سلام',
+            headers=[('Content-Type', 'text/plain')])
+        self.check_response()
+
+    def test_ask_emoji(self):
+        """
+        Test the case that the input string contains an emoji.
+        """
+        self.getPage(
+            '/askmeanything?q=💩 ',
+            headers=[('Content-Type', 'text/plain')])
+        self.check_response()
+
+    def test_ask_non_whitespace(self):
+        """
+        Test the case that a non-whitespace C1 control string is passed in.
+        """
+        self.getPage(
+            '/askmeanything?q=',
+            headers=[('Content-Type', 'text/plain')])
+        self.check_response()
+
+    def test_ask_two_byte_characters(self):
+        """
+        Test the case that a string containing two-byte characters is passed
+        in.
+        """
+        self.getPage(
+            '/askmeanything?q=田中さんにあげて下さい',
+            headers=[('Content-Type', 'text/plain')])
+        self.check_response()
+
+    def test_ask_corrupted_text(self):
+        """
+        Test the case that a string contains "corrupted" text.
+        """
+        self.getPage(
+            '/askmeanything?q=Ṱ̺̺̕h̼͓̲̦̳̘̲e͇̣̰̦̬͎ ̢̼̻̱̘h͚͎͙̜̣̲ͅi̦̲̣̰̤v̻͍e̺̭̳̪̰-m̢iͅn̖̺̞̲̯̰d̵̼̟͙̩̼̘̳.̨̹͈̣',
+            headers=[('Content-Type', 'text/plain')])
+        self.check_response()
 
     def test_different_method(self):
         """

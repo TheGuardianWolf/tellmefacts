@@ -45,6 +45,12 @@ class MultibotRelayAdapterTests(TestCase):
             ('Sorry, no bot with that name was found. Type \'list\' to '
              'see available bots.'))
 
+    def test_start_session_none(self):
+        response_statement = self.call_method('start_session', '')
+        self.assertEqual(
+            str(response_statement),
+            ('No bot name was provided. Type \'list\' to see available bots.'))
+
     def test_end_session_valid(self):
         self.call_method('start_session', 'test_bot_1')
         response_statement = self.call_method('end_session')
@@ -86,6 +92,13 @@ class MultibotRelayAdapterTests(TestCase):
             ('Sorry, no bot with that name was found. Type \'list\' to '
              'see available bots.'))
 
+    def test_process_connect_none(self):
+        response_statement = self.call_method(
+            'process', Statement('start_session'))
+        self.assertEqual(
+            str(response_statement),
+            ('No bot name was provided. Type \'list\' to see available bots.'))
+
     def test_process_list_while_connected(self):
         self.call_method('process', Statement('start_session test_bot_1'))
         response_statement = self.call_method('process', Statement('list'))
@@ -94,13 +107,29 @@ class MultibotRelayAdapterTests(TestCase):
                                       '2. test_bot_2\n'
                                       '3. test_bot_3'))
 
-    def test_process_connect_while_connected(self):
+    def test_process_connect_valid_while_connected(self):
         self.call_method('process', Statement('start_session test_bot_1'))
         response_statement = self.call_method(
             'process', Statement('start_session test_bot_2'))
         self.assertEqual(
             str(response_statement),
             'You are already in a chat session with test_bot_1!')
+
+    def test_process_connect_invalid_while_connected(self):
+        self.call_method('process', Statement('start_session test_bot_1'))
+        response_statement = self.call_method(
+            'process', Statement('start_session test_bot_-1'))
+        self.assertEqual(
+            str(response_statement),
+            'You are already in a chat session with test_bot_1!')
+
+    def test_process_connect_none_while_connected(self):
+        self.call_method('process', Statement('start_session test_bot_1'))
+        response_statement = self.call_method(
+            'process', Statement('start_session'))
+        self.assertEqual(
+            str(response_statement),
+            ('No bot name was provided. Type \'list\' to see available bots.'))
 
     def test_process_chat_while_connected(self):
         self.call_method('process', Statement('start_session test_bot_1'))

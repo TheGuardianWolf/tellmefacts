@@ -1,6 +1,5 @@
 from requests import get
 from requests.exceptions import RequestException
-from json import loads, JSONDecodeError
 
 
 class BotConnection(object):
@@ -15,8 +14,8 @@ class BotConnection(object):
                 'q': question
             })
 
-            response_text = loads(response.text)['response']
-        except (JSONDecodeError, KeyError, RequestException):
+            response_text = response.json['response']
+        except (ValueError, KeyError, RequestException):
             raise ValueError('Bot returned an invalid response.')
 
         return (response.status_code, response_text)
