@@ -11,8 +11,6 @@ def main():
                         help='run tests before starting client')
     parser.add_argument('--config-dir', dest='config_dir', action='store',
                         help='changes the config directory')
-    parser.add_argument('--data-dir', dest='data_dir', action='store',
-                        help='changes the data directory')
     args = parser.parse_args()
 
     if args.with_tests is True:

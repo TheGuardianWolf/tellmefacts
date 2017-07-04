@@ -10,28 +10,30 @@ from .services import RelayState, BotConnection
 class MultibotClient(object):
     root = path.dirname(getfile(import_module('client')))
     config_path = path.join(root, 'config')
-    data_path = path.join(root, 'data')
-
     """description of class"""
-    def __init__(self, config_path=config_path, data_path=data_path):
+
+    def __init__(self,
+                 config_path=config_path,
+                 input_adapter='chatterbot.input.TerminalAdapter',
+                 output_adapter='chatterbot.output.TerminalAdapter'):
         self.__config()
 
         self.bot = ChatBot(
             'Multibot',
-            database=path.join(data_path, 'database.db'),
+            database=None,
             read_only=True,
             silence_performance_warning=True,
             # storage_adapter='chatterbot.storage.SQLStorageAdapter',
-            input_adapter='chatterbot.input.TerminalAdapter',
-            output_adapter='chatterbot.output.TerminalAdapter',
-            logic_adapters=[
-                {
-                    'import_path': 'client.logic.MultibotRelayAdapter',
-                    'bot_connections': self.bot_connections,
-                    'state': self.state
-                }
-            ],
-        )
+            input_adapter=input_adapter,
+            output_adapter=output_adapter,
+            logic_adapters=[{
+                'import_path':
+                'client.logic.MultibotRelayAdapter',
+                'bot_connections':
+                self.bot_connections,
+                'state':
+                self.state
+            }], )
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
@@ -44,8 +46,8 @@ class MultibotClient(object):
         bot_connections = loads(fp.read())
         fp.close()
         for i, connection in enumerate(bot_connections):
-            bot_connections[i] = BotConnection(
-                connection['name'], connection['url'])
+            bot_connections[i] = BotConnection(connection['name'],
+                                               connection['url'])
 
         self.bot_connections = bot_connections
 
