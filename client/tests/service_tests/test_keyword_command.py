@@ -17,13 +17,13 @@ class KeywordCommandTests(TestCase):
 
     def test_match_has_args(self):
         result = KeywordCommand.match('command args')
-        self.assertIs(len(result.groups()), 3)
+        self.assertIs(len(result.groups()), 2)
         self.assertEqual(result.group(1), 'command')
         self.assertEqual(result.group(2), 'args')
 
     def test_match_no_args(self):
         result = KeywordCommand.match('command')
-        self.assertIs(len(result.groups()), 3)
+        self.assertIs(len(result.groups()), 2)
         self.assertEqual(result.group(1), 'command')
         self.assertEqual(result.group(2), '')
 

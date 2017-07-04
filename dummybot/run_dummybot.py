@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from dummybot import Server
 from argparse import ArgumentParser
+from sys import exit
 import pytest
 
 
@@ -13,11 +14,11 @@ def main():
     args = parser.parse_args()
 
     if args.with_tests is True:
-        result = pytest.main()
+        result = pytest.main(['-s'])
         try:
             assert result == 0
         except AssertionError:
-            raise AssertionError('Tests failed, aborting start.')
+            exit('ERROR: Tests failed, aborting start.')
 
     s = Server(config_path=args.config_dir)
     s.start()

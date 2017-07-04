@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from client import MultibotClient
 from argparse import ArgumentParser
+from sys import exit
 import pytest
 
 
@@ -15,13 +16,13 @@ def main():
     args = parser.parse_args()
 
     if args.with_tests is True:
-        result = pytest.main()
+        result = pytest.main([])
         try:
             assert result == 0
         except AssertionError:
-            raise AssertionError('Tests failed, aborting start.')
+            exit('ERROR: Tests failed, aborting start.')
 
-    c = MultibotClient(config_path=args.config_dir, data_path=args.data_dir)
+    c = MultibotClient(vars(args))
     c.start()
 
 

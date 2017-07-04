@@ -64,7 +64,7 @@ class MultibotRelayAdapter(LogicAdapter):
     def list(self):
         statement = ''
         for i, bot in enumerate(self.bot_connections):
-            statement += '{}. {}\n'.format(str(i) + 1, bot.name)
+            statement += '{}. {}\n'.format(str(i + 1), bot.name)
         statement = statement.rstrip('\n')
         return (1, Statement(statement))
 

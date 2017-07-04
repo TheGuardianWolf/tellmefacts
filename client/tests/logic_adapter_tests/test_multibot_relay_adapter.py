@@ -14,11 +14,11 @@ class MultibotRelayAdapterTests(TestCase):
         ]
         self.adapter = MultibotRelayAdapter(
             bot_connections=self.bot_connections,
-            relay_state=self.state)
+            state=self.state)
 
     def call_method(self, command, args=None):
         handler = getattr(self.adapter, command)
-        if args is not None:
+        if args is None:
             (confidence, response_statement) = handler()
         else:
             (confidence, response_statement) = handler(args)
@@ -49,7 +49,7 @@ class MultibotRelayAdapterTests(TestCase):
         response_statement = self.call_method('start_session', '')
         self.assertEqual(
             str(response_statement),
-            ('No bot name was provided. Type \'list\' to see available bots.'))
+            'No bot name was provided. Type \'list\' to see available bots.')
 
     def test_end_session_valid(self):
         self.call_method('start_session', 'test_bot_1')
@@ -97,7 +97,7 @@ class MultibotRelayAdapterTests(TestCase):
             'process', Statement('start_session'))
         self.assertEqual(
             str(response_statement),
-            ('No bot name was provided. Type \'list\' to see available bots.'))
+            'No bot name was provided. Type \'list\' to see available bots.')
 
     def test_process_list_while_connected(self):
         self.call_method('process', Statement('start_session test_bot_1'))
@@ -129,7 +129,7 @@ class MultibotRelayAdapterTests(TestCase):
             'process', Statement('start_session'))
         self.assertEqual(
             str(response_statement),
-            ('No bot name was provided. Type \'list\' to see available bots.'))
+            'You are already in a chat session with test_bot_1!')
 
     def test_process_chat_while_connected(self):
         self.call_method('process', Statement('start_session test_bot_1'))
@@ -160,6 +160,4 @@ class MultibotRelayAdapterTests(TestCase):
             'process', Statement('end_session'))
         self.assertEqual(
             str(response_statement),
-            ('You are currently not connected to any bot. '
-             'Connect to a bot with \'start_session <bot_name>\' or '
-             'type \'list\' for a list of available bots.'))
+            'You are currently not in an active session.')
