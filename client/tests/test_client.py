@@ -27,7 +27,8 @@ class ClientTests(TestCase):
         fp.close()
         self.client = MultibotClient(
             config_path=temp_path,
-            terminal=True)
+            input_adapter='chatterbot.input.VariableInputTypeAdapter',
+            output_adapter='chatterbot.output.OutputAdapter')
         self.bot_availablity = []
         for connection in self.client.bot_connections:
             self.bot_availablity.append(self.check_bot_up(connection))

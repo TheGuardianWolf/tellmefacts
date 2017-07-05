@@ -24,7 +24,8 @@ def main():
             exit('ERROR: Tests failed, aborting start.')
 
     if args.terminal:
-        client_args['terminal'] = args.terminal
+        client_args['input_adapter'] = 'chatterbot.input.TerminalAdapter'
+        client_args['output_adapter'] = 'chatterbot.output.TerminalAdapter'
 
     if args.config_dir is not None:
         client_args['config_path'] = args.config_dir

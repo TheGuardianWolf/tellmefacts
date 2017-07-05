@@ -1,5 +1,5 @@
 {
     "directline_host": "https://directline.botframework.com",
-    "direct_line_conservationId": "abc",
-    "direct_line_token_or_secret": "abc"
+    "direct_line_conversation_Id": "slackbot",
+    "direct_line_token_or_secret": "FW6ALpTb2Cc.cwA.Zf4.BUrI0aY-3zw4YIJvB957G0yISUG9_3vsDdiM4vfrm1k"
 }

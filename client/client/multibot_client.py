@@ -12,14 +12,11 @@ class MultibotClient(object):
     config_path = path.join(root, 'config')
     """description of class"""
 
-    def __init__(self, config_path=config_path, terminal=False):
-        input_adapter = 'chatterbot.input.TerminalAdapter'
-        output_adapter = 'chatterbot.output.TerminalAdapter'
-        if terminal:
-            input_adapter = 'chatterbot.input.TerminalAdapter'
-            output_adapter = 'chatterbot.output.TerminalAdapter'
-
-        self.__config(config_path, terminal)
+    def __init__(self,
+                 config_path=config_path,
+                 input_adapter='chatterbot.input.TerminalAdapter',
+                 output_adapter='chatterbot.output.TerminalAdapter'):
+        self.__config(config_path, input_adapter, output_adapter)
 
         self.bot = ChatBot(
             'Multibot',
@@ -47,7 +44,7 @@ class MultibotClient(object):
 
         self.bot.read_only = True
 
-    def __config(self, config_path, terminal):
+    def __config(self, config_path, input_adapter, output_adapter):
         self.state = RelayState()
 
         bot_connections = []
@@ -61,7 +58,8 @@ class MultibotClient(object):
         self.bot_connections = bot_connections
 
         self.ms_api = {}
-        if not terminal:
+        if input_adapter == 'chatterbot.input.Microsoft' or \
+                output_adapter == 'chatterbot.output.Microsoft':
             fp = open(path.join(config_path, 'microsoft_api.json'))
             self.ms_api = loads(fp.read())
             fp.close()
