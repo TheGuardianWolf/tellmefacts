@@ -31,7 +31,10 @@ class MultibotRelayAdapter(LogicAdapter):
             for command in self.commands:
                 if command.keyword == result.group(1):
                     if self.state.bot is None or not command.session_ignore:
-                        return command.handle(result.group(2))
+                        try:
+                            return command.handle(result.group(2))
+                        except ValueError:
+                            pass
                     break
 
         if keyword_command is None and self.state.bot is not None:
