@@ -34,6 +34,8 @@ class MultibotRelayAdapter(LogicAdapter):
                         try:
                             return command.handle(result.group(2))
                         except ValueError:
+                            # Happens when a user enters args for a no-args
+                            # command
                             pass
                     break
 

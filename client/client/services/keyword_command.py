@@ -18,6 +18,6 @@ class KeywordCommand(object):
         if self.has_args:
             return self.handler(args)
         else:
-            if args is not None or not len(args) == 0:
+            if args is not None and len(args) > 0:
                 raise ValueError('Command does not accept arguments.')
             return self.handler()
