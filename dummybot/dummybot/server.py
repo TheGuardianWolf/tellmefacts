@@ -14,7 +14,6 @@ class Server(object):
     config_path = path.join(root, 'config')
 
     def __init__(self, config_path=config_path):
-        print(config_path)
         self.__config(config_path)
         self.__setup()
 

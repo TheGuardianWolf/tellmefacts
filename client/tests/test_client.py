@@ -22,7 +22,7 @@ class ClientTests(TestCase):
             'name': 'Unusual Facts',
             'url': 'http://dummybot_3'
         }])
-        fp = open(path.join(temp_dir.name, 'responses.json'), 'w')
+        fp = open(path.join(temp_dir.name, 'bots.json'), 'w')
         fp.write(responses)
         fp.close()
         self.client = MultibotClient(

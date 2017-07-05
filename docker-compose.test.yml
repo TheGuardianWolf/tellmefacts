@@ -12,7 +12,7 @@ services:
         tty: true
     client:
         build: client
-        command: python client/run_client.py
+        command: python client/run_client.py 
         # command: /bin/sh
         volumes:
             - '.:/client'

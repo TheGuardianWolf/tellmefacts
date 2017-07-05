@@ -21,7 +21,6 @@ class MultibotClient(object):
         self.bot = ChatBot(
             'Multibot',
             database=None,
-            read_only=True,
             silence_performance_warning=True,
             # storage_adapter='chatterbot.storage.SQLStorageAdapter',
             input_adapter=input_adapter,
@@ -37,6 +36,8 @@ class MultibotClient(object):
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
+
+        self.bot.read_only = True
 
     def __config(self, config_path):
         self.state = RelayState()

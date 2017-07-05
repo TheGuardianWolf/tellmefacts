@@ -15,5 +15,5 @@ class RandomResponse(object):
     def GET(self, q):
         i = randint(0, len(self.responses) - 1)
         return {
-            'response': '#{} {}'.format(i, self.responses[i])
+            'response': '#{} {}'.format(i + 1, self.responses[i])
         }

@@ -21,4 +21,4 @@ class RandomResponseTests(TestCase):
         self.assertIn(cap.group(2), self.responses)
         for i, response in enumerate(self.responses):
             if (response == cap.group(2)):
-                self.assertEqual(i, int(cap.group(1)))
+                self.assertEqual(i + 1, int(cap.group(1)))
