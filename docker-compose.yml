@@ -2,13 +2,13 @@ version: '3'
 services:
     client:
         build: client
-        command: run_client.py
+        command: python run_client.py
         links:
             - dummybot
         stdin_open: true
         tty: true
     dummybot:
         build: dummybot
-        command: run_dummybot.py
+        command: python run_dummybot.py
         ports:
             - '80'

@@ -14,7 +14,7 @@ class BotConnection(object):
                 'q': question
             })
 
-            response_text = response.json['response']
+            response_text = response.json()['response']
         except (ValueError, KeyError, RequestException):
             raise ValueError('Bot returned an invalid response.')
 
