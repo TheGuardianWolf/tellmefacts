@@ -1,0 +1,5 @@
+{
+    "directline_host": "https://directline.botframework.com",
+    "direct_line_conservationId": "abc",
+    "direct_line_token_or_secret": "abc"
+}

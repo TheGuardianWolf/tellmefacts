@@ -14,6 +14,8 @@ class MultibotRelayAdapter(LogicAdapter):
         elif len(self.bot_connections) == 0:
             raise ValueError(('No bot connections have been provided.'))
 
+        print(kwargs.get('conversation_id'))
+
         self.commands = [
             KeywordCommand('list', False, False, self.list),
             KeywordCommand('start_session', True, False, self.start_session),

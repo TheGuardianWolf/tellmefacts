@@ -12,7 +12,7 @@ def main():
     parser.add_argument('--config-dir', dest='config_dir', action='store',
                         help='changes the config directory')
     parser.add_argument('--terminal', dest='terminal', action='store_true',
-                        help='chat with client over terminal')
+                        help='set bot to run on terminal mode')
     args = parser.parse_args()
     client_args = {}
 
@@ -24,8 +24,7 @@ def main():
             exit('ERROR: Tests failed, aborting start.')
 
     if args.terminal:
-        client_args['input_adapter'] = 'chatterbot.input.TerminalAdapter'
-        client_args['output_adapter'] = 'chatterbot.output.TerminalAdapter'
+        client_args['terminal'] = args.terminal
 
     if args.config_dir is not None:
         client_args['config_path'] = args.config_dir

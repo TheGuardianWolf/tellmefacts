@@ -12,16 +12,19 @@ class MultibotClient(object):
     config_path = path.join(root, 'config')
     """description of class"""
 
-    def __init__(self,
-                 config_path=config_path,
-                 input_adapter='chatterbot.input.TerminalAdapter',
-                 output_adapter='chatterbot.output.TerminalAdapter'):
-        self.__config(config_path)
+    def __init__(self, config_path=config_path, terminal=False):
+        input_adapter = 'chatterbot.input.TerminalAdapter'
+        output_adapter = 'chatterbot.output.TerminalAdapter'
+        if terminal:
+            input_adapter = 'chatterbot.input.TerminalAdapter'
+            output_adapter = 'chatterbot.output.TerminalAdapter'
+
+        self.__config(config_path, terminal)
 
         self.bot = ChatBot(
             'Multibot',
             database=None,
-            silence_performance_warning=True,
+            silence_performance_warning=True,  # Bot is read only anyway
             # storage_adapter='chatterbot.storage.SQLStorageAdapter',
             input_adapter=input_adapter,
             output_adapter=output_adapter,
@@ -32,14 +35,19 @@ class MultibotClient(object):
                 self.bot_connections,
                 'state':
                 self.state
-            }], )
+            }],
+            direct_line_host=self.ms_api.get('direct_line_host'),
+            direct_line_conservationId=self.ms_api.get(
+                'direct_line_conservationId'),
+            direct_line_token_or_secret=self.ms_api.get(
+                'direct_line_token_or_secret'))
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
 
         self.bot.read_only = True
 
-    def __config(self, config_path):
+    def __config(self, config_path, terminal):
         self.state = RelayState()
 
         bot_connections = []
@@ -51,6 +59,12 @@ class MultibotClient(object):
                                                connection['url'])
 
         self.bot_connections = bot_connections
+
+        self.ms_api = {}
+        if not terminal:
+            fp = open(path.join(config_path, 'microsoft_api.json'))
+            self.ms_api = loads(fp.read())
+            fp.close()
 
     def start(self):
         # The following loop will execute each time the user enters input
