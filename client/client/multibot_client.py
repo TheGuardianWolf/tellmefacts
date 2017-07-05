@@ -16,7 +16,7 @@ class MultibotClient(object):
                  config_path=config_path,
                  input_adapter='chatterbot.input.TerminalAdapter',
                  output_adapter='chatterbot.output.TerminalAdapter'):
-        self.__config()
+        self.__config(config_path)
 
         self.bot = ChatBot(
             'Multibot',
@@ -38,11 +38,11 @@ class MultibotClient(object):
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
 
-    def __config(self):
+    def __config(self, config_path):
         self.state = RelayState()
 
         bot_connections = []
-        fp = open(path.join(self.config_path, 'bots.json'))
+        fp = open(path.join(config_path, 'bots.json'))
         bot_connections = loads(fp.read())
         fp.close()
         for i, connection in enumerate(bot_connections):

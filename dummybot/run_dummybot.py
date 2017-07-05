@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--config-dir', dest='config_dir', action='store',
                         help='changes the config directory')
     args = parser.parse_args()
+    server_args = {}
 
     if args.with_tests is True:
         result = pytest.main(['-s'])
@@ -20,7 +21,10 @@ def main():
         except AssertionError:
             exit('ERROR: Tests failed, aborting start.')
 
-    s = Server(config_path=args.config_dir)
+    if args.config_dir is not None:
+        server_args['config_path'] = args.config_dir
+
+    s = Server(**server_args)
     s.start()
 
 
