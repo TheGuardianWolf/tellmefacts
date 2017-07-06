@@ -26,8 +26,9 @@
     <Folder Include="client\" />
     <Folder Include="client\client\" />
     <Folder Include="client\client\config\" />
-    <Folder Include="client\client\data\" />
     <Folder Include="client\client\logic\" />
+    <Folder Include="client\client\input\" />
+    <Folder Include="client\client\output\" />
     <Folder Include="client\client\services\" />
     <Folder Include="client\tests\" />
     <Folder Include="client\tests\logic_adapter_tests\" />
@@ -42,7 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="client\client\config\bots.json" />
-    <Content Include="client\client\data\.gitignore" />
+    <Content Include="client\client\config\microsoft_api.json" />
+    <Content Include="client\client\config\slack_api.json" />
     <Content Include="client\Dockerfile" />
     <Content Include="client\requirements.txt" />
     <Content Include="dummybot\Dockerfile" />
@@ -51,18 +53,29 @@
     <Content Include="dummybot\tests\pytest.ini" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="client\client\input\slack.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="client\client\input\__init__.py" />
     <Compile Include="client\client\logic\multibot_relay_adapter.py" />
     <Compile Include="client\client\logic\__init__.py" />
     <Compile Include="client\client\multibot_client.py" />
-    <Compile Include="client\client\services\bot_connection.py" />
-    <Compile Include="client\client\services\keyword_command.py" />
+    <Compile Include="client\client\output\slack.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="client\client\output\__init__.py" />
+    <Compile Include="client\client\services\bot_connections.py" />
+    <Compile Include="client\client\services\keywords.py" />
     <Compile Include="client\client\services\relay_state.py" />
+    <Compile Include="client\client\services\slack_client_service.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="client\client\services\__init__.py" />
     <Compile Include="client\client\__init__.py" />
     <Compile Include="client\run_client.py" />
     <Compile Include="client\tests\logic_adapter_tests\test_multibot_relay_adapter.py" />
-    <Compile Include="client\tests\service_tests\test_bot_connection.py" />
-    <Compile Include="client\tests\service_tests\test_keyword_command.py" />
+    <Compile Include="client\tests\service_tests\test_bot_connections.py" />
+    <Compile Include="client\tests\service_tests\test_keywords.py" />
     <Compile Include="client\tests\service_tests\test_relay_state.py" />
     <Compile Include="client\tests\test_client.py" />
     <Compile Include="dummybot\dummybot\controllers\random_response.py" />

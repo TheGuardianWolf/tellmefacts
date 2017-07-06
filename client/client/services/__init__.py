@@ -1,11 +1,15 @@
-from .bot_connection import BotConnection
+from .bot_connections import BotConnection, BotConnectionManager
 from .relay_state import RelayState
-from .keyword_command import KeywordCommand
+from .keywords import KeywordCommand, KeywordManager
+from .slack_client_service import SlackClientService
 
 
 __all__ = (
     'BotConnection',
+    'BotConnectionManager',
     'RelayState',
-    'KeywordCommand'
+    'KeywordCommand',
+    'KeywordManager',
+    'SlackClientService'
 )
 

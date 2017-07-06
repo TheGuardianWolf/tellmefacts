@@ -1,5 +1,6 @@
 from unittest import TestCase
 from client.services import BotConnection
+from requests import get
 
 
 class BotConnectionTests(TestCase):
@@ -12,5 +13,5 @@ class BotConnectionTests(TestCase):
             self.assertTrue(status == '200')
             self.assertTrue(isinstance(response_text, str))
         except ValueError:
-            # Nothing to test if the no dummybot servers are up.
+            # Can't test further if no dummybot servers are up.
             pass      

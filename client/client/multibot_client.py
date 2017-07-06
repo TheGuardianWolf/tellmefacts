@@ -1,10 +1,11 @@
+import logging
 from inspect import getfile
 from importlib import import_module
 from os import path
 from json import loads
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
-from .services import RelayState, BotConnection
+from .services import RelayState, BotConnectionManager, SlackClientService
 
 
 class MultibotClient(object):
@@ -14,10 +15,11 @@ class MultibotClient(object):
 
     def __init__(self,
                  config_path=config_path,
-                 input_adapter='chatterbot.input.TerminalAdapter',
-                 output_adapter='chatterbot.output.TerminalAdapter'):
+                 input_adapter='client.input.slack',
+                 output_adapter='client.output.slack'):
         self.__config(config_path, input_adapter, output_adapter)
-
+        
+        logging.basicConfig(level=logging.INFO)
         self.bot = ChatBot(
             'Multibot',
             database=None,
@@ -33,11 +35,7 @@ class MultibotClient(object):
                 'state':
                 self.state
             }],
-            direct_line_host=self.ms_api.get('direct_line_host'),
-            direct_line_conservationId=self.ms_api.get(
-                'direct_line_conservationId'),
-            direct_line_token_or_secret=self.ms_api.get(
-                'direct_line_token_or_secret'))
+            shutdown_event=Event())
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
@@ -45,24 +43,18 @@ class MultibotClient(object):
         self.bot.read_only = True
 
     def __config(self, config_path, input_adapter, output_adapter):
-        self.state = RelayState()
-
-        bot_connections = []
         fp = open(path.join(config_path, 'bots.json'))
-        bot_connections = loads(fp.read())
+        self.bot_connections = BotConnectionManager(loads(fp.read()))
         fp.close()
-        for i, connection in enumerate(bot_connections):
-            bot_connections[i] = BotConnection(connection['name'],
-                                               connection['url'])
 
-        self.bot_connections = bot_connections
-
-        self.ms_api = {}
-        if input_adapter == 'chatterbot.input.Microsoft' or \
-                output_adapter == 'chatterbot.output.Microsoft':
-            fp = open(path.join(config_path, 'microsoft_api.json'))
-            self.ms_api = loads(fp.read())
+        self.slack_api = {}
+        if input_adapter == 'client.input.Slack' or \
+                output_adapter == 'client.output.Slack':
+            fp = open(path.join(config_path, 'slack_api.json'))
+            self.slack_api = loads(fp.read())
             fp.close()
+
+        self.state = RelayState()
 
     def start(self):
         # The following loop will execute each time the user enters input
@@ -70,8 +62,9 @@ class MultibotClient(object):
             try:
                 # We pass None to this method because the parameter
                 # is not used by the TerminalAdapter
-                self.bot.get_response(None)
+                self.bot.get_response()
 
             # Press ctrl-c or ctrl-d on the keyboard to exit
             except (KeyboardInterrupt, EOFError, SystemExit):
+                self.bot.input.close()
                 break

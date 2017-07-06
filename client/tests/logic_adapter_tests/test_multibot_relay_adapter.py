@@ -153,15 +153,18 @@ class MultibotRelayAdapterTests(TestCase):
         response_statement = self.call_method('process', Statement('hello'))
 
         try:
-            (status, response) = self.state.bot.ask('test')
+            (status, response) = self.state.bot.ask('hello')
+            assert status == 200
         except AssertionError:
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: {})'.format(str(status)))
+            self.assertEqual(response, str(response_statement))
         except ValueError:
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: Connection not established)')
-
-        self.assertEqual(response, str(response_statement))
+            self.assertEqual(response, str(response_statement))
+        else:
+            self.assertIsInstance(response_statement, Statement)
 
     def test_process_disconnect_while_connected(self):
         self.call_method('process', Statement('start_session test_bot_2'))

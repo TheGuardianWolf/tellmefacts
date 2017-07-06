@@ -1,11 +1,11 @@
 from chatterbot.logic import LogicAdapter
 from chatterbot.conversation import Statement
-from ..services import KeywordCommand
+from ..services import KeywordManager
 
 
 class MultibotRelayAdapter(LogicAdapter):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super(MultibotRelayAdapter, self).__init__(**kwargs)
 
         self.bot_connections = kwargs.get('bot_connections', [])
         self.state = kwargs.get('state')
@@ -14,34 +14,47 @@ class MultibotRelayAdapter(LogicAdapter):
         elif len(self.bot_connections) == 0:
             raise ValueError(('No bot connections have been provided.'))
 
-        print(kwargs.get('conversation_id'))
-
-        self.commands = [
-            KeywordCommand('list', False, False, self.list),
-            KeywordCommand('start_session', True, False, self.start_session),
-            KeywordCommand('end_session', False, False, self.end_session)
-        ]
+        self.keywords = KeywordManager([
+            {
+                'type': 'command',
+                'keyword': 'list',
+                'has_args': False,
+                'session_ignore': False,
+                'handler': self.list
+            },
+            {
+                'type': 'command',
+                'keyword': 'start_session',
+                'has_args': True,
+                'session_ignore': False,
+                'handler': self.start_session
+            },
+            {
+                'type': 'command',
+                'keyword': 'end_session',
+                'has_args': False,
+                'session_ignore': False,
+                'handler': self.end_session
+            }
+        ])
 
     def process(self, statement):
         confidence = 1
         response_statement = Statement('')
 
-        keyword_command = None
         result = KeywordCommand.match(statement.text)
 
         if result is not None:
-            for command in self.commands:
-                if command.keyword == result.group(1):
-                    if self.state.bot is None or not command.session_ignore:
-                        try:
-                            return command.handle(result.group(2))
-                        except ValueError:
-                            # Happens when a user enters args for a no-args
-                            # command
-                            pass
-                    break
+            command = self.keywords.get('command', result.group(1))
+            if self.state.bot is None or not command.session_ignore:
+                try:
+                    return command.handle(result.group(2))
+                except ValueError:
+                    # Happens when a user enters args for a no-args
+                    # command
+                    pass
 
-        if keyword_command is None and self.state.bot is not None:
+        if self.state.bot is not None:
             (confidence, response_statement) = self.bot_request(statement.text)
         else:
             confidence = 1
@@ -54,8 +67,10 @@ class MultibotRelayAdapter(LogicAdapter):
     def bot_request(self, text):
         confidence = 1
 
+        bot = self.state.bot
+
         try:
-            (status, response) = self.state.bot.ask(text)
+            (status, response) = bot.ask(text)
             assert status == 200
         except AssertionError:
             response = ('Selected bot is currently unavailable, please try '
@@ -64,13 +79,13 @@ class MultibotRelayAdapter(LogicAdapter):
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: Connection not established)')
 
-        response_statement = Statement(response)
+        response_statement = Statement(bot.name + ': ' + response)
 
         return (confidence, response_statement)
 
     def list(self):
         statement = ''
-        for i, bot in enumerate(self.bot_connections):
+        for i, bot in enumerate(self.bot_connections.all()):
             statement += '{}. {}\n'.format(str(i + 1), bot.name)
         statement = statement.rstrip('\n')
         return (1, Statement(statement))
@@ -82,11 +97,14 @@ class MultibotRelayAdapter(LogicAdapter):
                     ('No bot name was provided. Type \'list\' to see available'
                      ' bots.')))
 
-            for bot in self.bot_connections:
-                if bot.name == args:
-                    self.state.bot = bot
-                    return (1, Statement(
-                        'You are now chatting with {}.'.format(bot.name)))
+            try:
+                bot = self.bot_connections.get(args)
+                self.state.bot = bot
+                return (1, Statement(
+                    'You are now chatting with {}.'.format(bot.name)))
+            except AttributeError:
+                # Bot not found (is NoneType)
+                pass
         else:
             return (
                 1,
