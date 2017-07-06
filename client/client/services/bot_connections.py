@@ -19,6 +19,7 @@ class BotConnection(object):
 
         return (response.status_code, response_text)
 
+
 class BotConnectionManager(object):
     """description of class"""
     def __init__(self, connection_list):

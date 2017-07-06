@@ -1,5 +1,6 @@
 from re import compile
 
+
 class Keyword(object):
     def __init__(self, keyword, has_args, handler, **kwargs):
         self.keyword = keyword
@@ -15,6 +16,7 @@ class Keyword(object):
                 raise ValueError('Keyword does not accept arguments.')
             return self.handler()
 
+
 class KeywordCommand(Keyword):
     command_regexp = compile('^([^ ]+) ?(.*)$')
 
@@ -23,7 +25,9 @@ class KeywordCommand(Keyword):
         return self.command_regexp.match(test)
 
     def __init__(self, keyword, has_args, handler, **kwargs):
-        super(KeywordCommand, self).__init__(keyword, has_args, handler, **kwargs)
+        super(KeywordCommand, self).__init__(keyword, has_args, handler,
+                                             **kwargs)
+
 
 class KeywordManager(object):
     def __init__(self, keywords_list):
@@ -31,7 +35,7 @@ class KeywordManager(object):
         for keyword in keywords_list:
             self.add(**keyword)
 
-    def add(type, keyword, has_args, handler, **kwargs):
+    def add(self, type, keyword, has_args, handler, **kwargs):
         if type == 'command':
             keyword = KeywordCommand(keyword, has_args, handler, **kwargs)
         else:
@@ -39,7 +43,7 @@ class KeywordManager(object):
 
         self.keywords.append(keyword)
 
-    def get(type, keyword):
+    def get(self, type, keyword):
         for word in self.keywords:
             if word.keyword == keyword:
                 return word

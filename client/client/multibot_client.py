@@ -5,7 +5,7 @@ from os import path
 from json import loads
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
-from .services import RelayState, BotConnectionManager, SlackClientService
+from .services import RelayState, BotConnectionManager
 
 
 class MultibotClient(object):
@@ -34,8 +34,7 @@ class MultibotClient(object):
                 self.bot_connections,
                 'state':
                 self.state
-            }],
-            shutdown_event=Event())
+            }])
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
