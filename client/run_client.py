@@ -12,7 +12,7 @@ def main():
     parser.add_argument('--config-dir', dest='config_dir', action='store',
                         help='changes the config directory')
     parser.add_argument('--terminal', dest='terminal', action='store_true',
-                        help='set bot to run on terminal mode')
+                        help='set bot to run in terminal mode')
     args = parser.parse_args()
     client_args = {}
 

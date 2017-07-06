@@ -3,6 +3,7 @@ from queue import Queue
 from slackclient import SlackClient
 from chatterbot.input import InputAdapter
 from chatterbot.conversation import Statement
+from re import compile
 
 
 class Slack(InputAdapter):
@@ -20,19 +21,16 @@ class Slack(InputAdapter):
         self.bot_name = kwargs.get('bot_name', 'tellmefacts')
         self.slack_client = SlackClient(self.bot_user_token)
         self.bot_id = self.get_bot_id()
+        self.bot_mention = compile('^<@{}> (.*)$'.format(self.bot_id))
         self.start()
 
     def get_bot_id(self):
         self.logger.info('attempting to find bot ID from Slack')
-        api_call = self.slack_client.api_call('users.list')
-        if api_call.get('ok'):
-            # retrieve all users so we can find our bot
-            users = api_call.get('members')
-            for user in users:
-                if 'name' in user and user.get('name') == self.bot_name:
-                    self.bot_id = user.get('id')
-                    self.logger.info(
-                        'bot ID recognised as \'{}\''.format(self.bot_id))
+        api_call = self.slack_client.api_call('auth.test')
+        if api_call.get('ok') and 'user_id' in api_call:
+            bot_id = api_call.get('user_id')
+            self.logger.info('bot ID recognised as \'{}\''.format(bot_id))
+            return bot_id
         else:
             raise LookupError(
                 'Could not find bot user \'{}\'.'.format(self.bot_name))
@@ -67,9 +65,16 @@ class Slack(InputAdapter):
     def process_input(self, statement):
         data = False
         while not data:
-            data = self.events.get('message').data.get(timeout=3.5)
+            event = False
+            while not event:
+                event = self.events.get('message').data.get(timeout=3.5)
+            result = self.bot_mention.match(event.get('text', ''))
+            if result is not None:
+                data = event
+                data['matched_text'] = result.group(1)
+
         self.events.get('message').clear()
-        statement = Statement(data['text'], extra_data=data)
+        statement = Statement(data['matched_text'], extra_data=data)
         self.logger.info('processing user statement {}'.format(statement))
         return statement
 

@@ -15,8 +15,8 @@ class MultibotClient(object):
 
     def __init__(self,
                  config_path=config_path,
-                 input_adapter='client.input.slack',
-                 output_adapter='client.output.slack'):
+                 input_adapter='client.input.Slack',
+                 output_adapter='client.output.Slack'):
         self.__config(config_path, input_adapter, output_adapter)
         
         logging.basicConfig(level=logging.INFO)
@@ -34,7 +34,9 @@ class MultibotClient(object):
                 self.bot_connections,
                 'state':
                 self.state
-            }])
+            }],
+            bot_user_token=self.slack_api.get('bot_user_token'),
+            bot_name=self.slack_api.get('bot_name'))
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])

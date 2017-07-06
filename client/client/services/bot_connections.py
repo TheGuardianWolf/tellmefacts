@@ -27,12 +27,12 @@ class BotConnectionManager(object):
         for bot in connection_list:
             self.add(**bot)
 
-    def add(self, bot_name, bot_url):
-        self.connections.append(BotConnection(bot_name, bot_url))
+    def add(self, name, url):
+        self.connections.append(BotConnection(name, url))
 
-    def get(self, bot_name):
+    def get(self, name):
         for bot in self.connections:
-            if bot.name == bot_name:
+            if bot.name == name:
                 return bot
         return None
 

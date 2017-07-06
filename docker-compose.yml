@@ -7,8 +7,12 @@ services:
             - dummybot
         stdin_open: true
         tty: true
+        volumes: 
+            - './client:/client' 
     dummybot:
         build: dummybot
         command: python run_dummybot.py
         ports:
             - '80'
+        volumes: 
+            - './dummybot:/dummybot' 
