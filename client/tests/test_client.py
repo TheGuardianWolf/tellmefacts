@@ -42,7 +42,7 @@ class ClientTests(TestCase):
     def check_bot_up(self, bot_connection):
         return False
         try:
-            r = get(bot_connection.url + '/askmeanything?q=test', timeout=1)
+            r = get(bot_connection['url'] + '/askmeanything?q=test', timeout=1)
             assert r.ok
             return True
         except (RequestException, AssertionError):
@@ -78,16 +78,16 @@ class ClientTests(TestCase):
                                      '2. Strange Facts\n'
                                      '3. Unusual Facts'))
 
-        for connection in self.client.bot_connections:
+        for i, connection in enumerate(self.client.bot_connections):
             self.assertEqual(
-                self.query_bot('start_session {}'.format(connection.name)),
-                'You are now chatting with {}.'.format(connection.name))
-            if self.bot_availablity[0]:
+                self.query_bot('start_session {}'.format(connection['name'])),
+                'You are now chatting with {}.'.format(connection['name']))
+            if self.bot_availablity[i]:
                 rand = self.random_string()
                 self.assertIsInstance(str(self.query_bot(rand)), str)
             self.assertEqual(
                 self.query_bot('end_session'),
-                'Chat session with {} ended.'.format(connection.name))
+                'Chat session with {} ended.'.format(connection['name']))
 
     def test_invalid_chat(self):
         if self.bot_availablity[0]:

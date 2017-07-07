@@ -39,7 +39,6 @@
     <Folder Include="dummybot\dummybot\controllers\" />
     <Folder Include="dummybot\tests\" />
     <Folder Include="dummybot\tests\controller_tests\" />
-    <Folder Include="integration-tests\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="client\client\config\bots.json" />
@@ -67,9 +66,6 @@
     <Compile Include="client\client\services\bot_connections.py" />
     <Compile Include="client\client\services\keywords.py" />
     <Compile Include="client\client\services\relay_state.py" />
-    <Compile Include="client\client\services\slack_client_service.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="client\client\services\__init__.py" />
     <Compile Include="client\client\__init__.py" />
     <Compile Include="client\run_client.py" />
@@ -85,9 +81,6 @@
     <Compile Include="dummybot\run_dummybot.py" />
     <Compile Include="dummybot\tests\controller_tests\test_random_response.py" />
     <Compile Include="dummybot\tests\test_dummybot.py" />
-    <Compile Include="integration-tests\test_client_with_cptest.py" />
-    <Compile Include="integration-tests\test_client_with_docker-compose.py" />
-    <Compile Include="integration-tests\test_client_with_slack.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

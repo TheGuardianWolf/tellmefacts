@@ -5,7 +5,6 @@ class Keyword(object):
     def __init__(self, keyword, has_args, handler, **kwargs):
         self.keyword = keyword
         self.has_args = has_args
-        self.session_ignore = kwargs.get('session_ignore', False)
         self.handler = handler
 
     def handle(self, args=None):
@@ -27,6 +26,7 @@ class KeywordCommand(Keyword):
     def __init__(self, keyword, has_args, handler, **kwargs):
         super(KeywordCommand, self).__init__(keyword, has_args, handler,
                                              **kwargs)
+        self.session_ignore = kwargs.get('session_ignore', False)
 
 
 class KeywordManager(object):
@@ -36,6 +36,10 @@ class KeywordManager(object):
             self.add(**keyword)
 
     def add(self, type, keyword, has_args, handler, **kwargs):
+        for word in self.keywords:
+            if word.keyword == keyword:
+                raise ValueError('Keyword already exists')
+
         if type == 'command':
             keyword = KeywordCommand(keyword, has_args, handler, **kwargs)
         else:
@@ -43,7 +47,7 @@ class KeywordManager(object):
 
         self.keywords.append(keyword)
 
-    def get(self, type, keyword):
+    def get(self, keyword):
         for word in self.keywords:
             if word.keyword == keyword:
                 return word

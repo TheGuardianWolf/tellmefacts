@@ -3,6 +3,7 @@ from client import MultibotClient
 from argparse import ArgumentParser
 from sys import exit
 import pytest
+import logging
 
 
 def main():
@@ -13,6 +14,8 @@ def main():
                         help='changes the config directory')
     parser.add_argument('--terminal', dest='terminal', action='store_true',
                         help='set bot to run in terminal mode')
+    parser.add_argument('--verbose', dest='verbose', action='store_true',
+                        help='display all logging information on terminal')
     args = parser.parse_args()
     client_args = {}
 
@@ -29,6 +32,9 @@ def main():
 
     if args.config_dir is not None:
         client_args['config_path'] = args.config_dir
+
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO)
 
     c = MultibotClient(**client_args)
     c.start()
