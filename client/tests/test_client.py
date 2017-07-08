@@ -1,4 +1,4 @@
-from unittest import TestCase
+import pytest
 from client import MultibotClient
 from random import randint
 from tempfile import TemporaryDirectory
@@ -8,7 +8,7 @@ from requests import get
 from requests.exceptions import RequestException
 
 
-class ClientTests(TestCase):
+class TestClient(object):
     def setUp(self):
         temp_dir = TemporaryDirectory()
         temp_path = temp_dir.name

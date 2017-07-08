@@ -1,51 +1,58 @@
-from unittest import TestCase
+import pytest
 from client.services import Keyword, KeywordCommand, KeywordManager
 
 
-class KeywordTests(TestCase):
-    def test_handle_has_args(self):
-        def handler(i=None):
-            return i
-        bc_has_args = Keyword('test', True, handler)
-        self.assertTrue(bc_has_args.handle(True))
-
-    def test_handle_no_args(self):
-        def handler():
-            return None
-        bc_no_args = Keyword('test', False, handler)
-        self.assertIsNone(bc_no_args.handle())
+@pytest.fixture(params=[True, False])
+def keyword():
+    def handler(i=None):
+        return i
+    return Keyword('test', True, handler)
 
 
-class KeywordCommandTests(TestCase):
-    def test_init(self):
-        kc = KeywordCommand(**{
+class TestKeyword(object):
+    def test_handle(self, keyword):
+        if keyword.has_args:
+            assert keyword.handle(True)
+        else:
+            assert keyword.handle() is None
+            with pytest.raises(ValueError):
+                keyword.handle(True)
+
+
+@pytest.fixture()
+def keyword_command():
+    return KeywordCommand(**{
                 'keyword': 'test',
                 'has_args': False,
                 'session_ignore': False,
                 'handler': None
             })
-        self.assertFalse(kc.session_ignore)
+
+
+class TestKeywordCommand(object):
+    def test_keyword_command(self, keyword_command):
+        assert not keyword_command.session_ignore
 
     def test_match_has_args(self):
         result = KeywordCommand.match('command args')
-        self.assertIs(len(result.groups()), 2)
-        self.assertEqual(result.group(1), 'command')
-        self.assertEqual(result.group(2), 'args')
+        assert len(result.groups()) == 2
+        assert result.group(1) == 'command'
+        assert result.group(2) == 'args'
 
     def test_match_no_args(self):
         result = KeywordCommand.match('command')
-        self.assertIs(len(result.groups()), 2)
-        self.assertEqual(result.group(1), 'command')
-        self.assertEqual(result.group(2), '')
+        assert len(result.groups()) == 2
+        assert result.group(1) == 'command'
+        assert result.group(2) == ''
 
     def test_match_invalid(self):
         result = KeywordCommand.match('')
-        self.assertIsNone(result)
+        assert result is None
 
 
-class KeywordManagerTests(TestCase):
-    def setUp(self):
-        self.km = KeywordManager(
+@pytest.fixture()
+def keyword_manager():
+    return KeywordManager(
             [{
                 'type': 'command',
                 'keyword': 'test',
@@ -54,20 +61,24 @@ class KeywordManagerTests(TestCase):
                 'handler': None
             }]
         )
-        self.assertEqual(len(self.km.keywords), 1)
-        self.assertIsInstance(self.km.keywords[0], KeywordCommand)
-        self.assertFalse(self.km.keywords[0].session_ignore)
 
-    def test_add(self):
-        self.km.add('command', 'test_2', False, None, session_ignore=False)
+
+class TestKeywordManager(object):
+    def test_keyword_manager(self, keyword_manager):
+        self.assertEqual(len(keyword_manager.keywords), 1)
+        self.assertIsInstance(keyword_manager.keywords[0], KeywordCommand)
+        self.assertFalse(keyword_manager.keywords[0].session_ignore)
+
+    def test_add(self, keyword_manager):
+        keyword_manager.add('command', 'test_2', False, None, session_ignore=False)
         self.assertEqual(len(self.km.keywords), 2)
         self.assertIsInstance(self.km.keywords[1], KeywordCommand)
         self.assertFalse(self.km.keywords[1].session_ignore)
         with self.assertRaises(ValueError):
             self.km.add('command', 'test_2', False, None, session_ignore=False)
 
-    def test_get(self):
-        command = self.km.get('test')
+    def test_get(self, keyword_manager):
+        command = keyword_manager.get('test')
         self.assertIsInstance(command, KeywordCommand)
         self.assertEquals(command.keyword, 'test')
         self.assertIsNone(self.km.get('none'))

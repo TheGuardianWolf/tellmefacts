@@ -1,128 +1,78 @@
-from unittest import TestCase
-from mock import Mock
-from chatterbot.conversation import Statement
-from chatterbot.input import Slack
-from chatterbot.input import slack
+import pytest
+from client.input import Slack
+from slackclient import SlackClient
+from queue import Queue
+from threading import Event
 
 
-class MockResponse(object):
-
-    def __init__(self, status_code, data):
-        self.status_code = status_code
-        self.data = data
-
-    def json(self):
-        return self.data
-
-
-def mock_start_conversation(*args, **kwargs):
-    url = args[0]
-    endpoints = {
-        'https://directline.botframework.com/api/conversations': MockResponse(
-            200,
-            {
-                "conversationId": "IEyJvnDULgn",
-                "token": (
-                    "xtFDtPemROU.dAA.MgBPAGUAUQBnADEAWgB2AGUAYwA3AA.oWyal9M70g"
-                    "E.XJEMr9FNGGI.6UCCu0-lLSLplLZ0MVDk_rMle7DItjF-KFSIUTUjUR8"
-                ),
-                "expires_in": 0
+@pytest.fixture()
+def slack_adapter(mocker):
+    mock_api_call = {
+        'ok': True,
+        'user_id': 'fakeid',
+        'user': {
+            'profile': {
+                'bot_id': 'fakebotid'
             }
-        )
+        }
     }
-
-    return endpoints[url]
-
-
-def mock_send_message(*args, **kwargs):
-    url = args[0]
-    endpoints = {
-        'https://directline.botframework.com/api/conversations/IEyJvnDULgn/messages': MockResponse(
-            204, 'no content'
-        )
-    }
-
-    return endpoints[url]
-
-
-def mock_get_message(*args, **kwargs):
-    url = args[0]
-    endpoints = {
-        'https://directline.botframework.com/api/conversations/IEyJvnDULgn/messages': MockResponse(200, {
-            "messages": [
-                {
-                    "id": "IEyJvnDULgn|000000000000000001",
-                    "conversationId": "IEyJvnDULgn",
-                    "created": "2016-11-04T15:26:57.9186086Z",
-                    "from": "malli.kv2@gmail.com",
-                    "images": [],
-                    "attachments": [
-                        {
-                            "url": (
-                                "/attachments/IEyJvnDULgn/000000000000000001/0/testregexp.txt"
-                                "?t=xtFDtPemROU.dAA.SQBFAHkASgB2AG4ARABVAEwAZwBuAC0AMAAwADAAM"
-                                "AAwADAAMAAwADAAMAAwADAAMAAwADAAMAAwADEA.67FrGrs20gE.-Hqfw5g3"
-                                "NgM.eJZ8WI_v78i1OBZ0zF4jLjuOpKrw2WF0PmqSgEhWIYw"
-                            ),
-                            "contentType": "text/plain"
-                        }
-                    ],
-                    "eTag": "W/\"datetime'2016-11-04T15%3A26%3A58.3595526Z'\""
-                },
-                {
-                    "id": "IEyJvnDULgn|000000000000000002",
-                    "conversationId": "IEyJvnDULgn",
-                    "created": "2016-11-04T15:27:00.2245784Z",
-                    "from": "bc-directlinedocs-testbot",
-                    "text": "Hi! What is your name?",
-                    "images": [],
-                    "attachments": [],
-                    "eTag": "W/\"datetime'2016-11-04T15%3A27%3A00.663327Z'\""
-                }
-            ],
-            "watermark": "2"
-        })
-    }
-
-    return endpoints[url]
+    mocker.patch(
+        'slackclient.SlackClient.api_call', return_value=mock_api_call)
+    mocker.patch(
+        'slackclient.SlackClient.rtm_connect', return_value=True)
+    mocker.patch(
+        'slackclient.SlackClient.rtm_read')
+    sc = SlackClient('xoxp-1234123412341234-12341234-1234')
+    s = Slack(slack_client=sc, bot_name='tellmefacts', start_event_loop=False)
+    yield s
+    try:
+        s.close()
+    except AttributeError:
+        pass
 
 
-class MicrosoftAdapterTests(TestCase):
+class TestSlackInputAdapter(object):
+    def test_init(self, slack_adapter):
+        assert slack_adapter.user_id == 'fakeid'
+        assert slack_adapter.bot_id == 'fakebotid'
 
-    def setUp(self):
-        super(MicrosoftAdapterTests, self).setUp()
-        import requests
+    def test_start(self, slack_adapter):
+        slack_adapter.start()
+        assert slack_adapter.events.get('ready').is_set()
 
-        requests.post = Mock(side_effect=mock_start_conversation)
-        requests.get = Mock(side_effect=mock_get_message)
+    def test_close(self, slack_adapter):
+        slack_adapter.start()
+        slack_adapter.close()
+        assert not slack_adapter.events.get('ready').is_set()
+        assert slack_adapter.event_thread is not None
 
-        microsoft.requests = requests
+    def test_event_loop(self, slack_adapter, mocker):
+        mock_events = [{
+            'type': 'message',
+            'text': 'test'
+        }]
+        mocker.patch(
+            'slackclient.SlackClient.rtm_read', return_value=mock_events)
+        slack_adapter.start()
+        assert slack_adapter.events.get('ready').is_set()
+        assert slack_adapter.events.get('message').wait(timeout=1)
+        assert slack_adapter.events.get('message').is_set()
+        message_data = slack_adapter.events.get('message').data.get_nowait()
+        assert message_data is mock_events[0]
 
-        self.adapter = Microsoft(
-            directline_host='https://directline.botframework.com',
-            direct_line_token_or_secret='xtFDtPemROU.cwA.Mcs.qiScdaSx87ffj2l7OjSITqJFoN-9Ado5AgwVeknac94',
-        )
+    def test_process_input(self, slack_adapter, mocker):
+        mock_message = {
+            'type': 'message',
+            'text': '<@fakeid> test'
+        }
+        slack_adapter.events.get('message').data.put(mock_message)
+        slack_adapter.events.get('message').set()
+        statement = slack_adapter.process_input(None)
+        assert str(statement) == 'test'
+        assert statement.extra_data is mock_message
 
-    def test_validate_status_code_200(self):
-        response = MockResponse(200, {})
-
-        try:
-            self.adapter._validate_status_code(response)
-        except Microsoft.HTTPStatusException:
-            self.fail('Test raised HTTPStatusException unexpectedly!')
-
-    def test_response_status_code_not_ok(self):
-        response = MockResponse(404, {})
-        with self.assertRaises(Microsoft.HTTPStatusException):
-            self.adapter._validate_status_code(response)
-
-    def test_start_conversation(self):
-        data = self.adapter.start_conversation()
-        self.assertIn('conversationId', data)
-        self.assertIn('token', data)
-        self.assertIn('expires_in', data)
-
-    def test_process_input(self):
-        statement = Statement('Hi! What is your name?')
-        data = self.adapter.process_input(statement)
-        self.assertEqual('Hi! What is your name?', data)
+    def test_slack_event(self):
+        se = Slack.SlackEvent('message')
+        assert se.type == 'message'
+        assert isinstance(se.event, Event)
+        assert isinstance(se.data, Queue)

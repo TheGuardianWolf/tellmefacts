@@ -14,7 +14,6 @@ class Slack(InputAdapter):
     def __init__(self, **kwargs):
         super(Slack, self).__init__(**kwargs)
         self.events = {}
-        self.last_object = None
         for event in self.event_types:
             self.events[event] = self.SlackEvent(event)
 
@@ -25,7 +24,8 @@ class Slack(InputAdapter):
         self.user_id = self.get_user_id()
         self.bot_id = self.get_bot_id(self.user_id)
         self.bot_mention = compile('^<@{}> (.*)$'.format(self.user_id))
-        self.start()
+        if kwargs.get('start_event_loop', True):  # Used for testing
+            self.start()
 
     def get_user_id(self):
         self.logger.info('attempting to find user ID from Slack')
