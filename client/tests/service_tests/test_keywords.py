@@ -6,6 +6,7 @@ from client.services import Keyword, KeywordCommand, KeywordManager
 def keyword():
     def handler(i=None):
         return i
+
     return Keyword('test', True, handler)
 
 
@@ -22,11 +23,11 @@ class TestKeyword(object):
 @pytest.fixture()
 def keyword_command():
     return KeywordCommand(**{
-                'keyword': 'test',
-                'has_args': False,
-                'session_ignore': False,
-                'handler': None
-            })
+        'keyword': 'test',
+        'has_args': False,
+        'session_ignore': False,
+        'handler': None
+    })
 
 
 class TestKeywordCommand(object):
@@ -52,33 +53,33 @@ class TestKeywordCommand(object):
 
 @pytest.fixture()
 def keyword_manager():
-    return KeywordManager(
-            [{
-                'type': 'command',
-                'keyword': 'test',
-                'has_args': False,
-                'session_ignore': False,
-                'handler': None
-            }]
-        )
+    return KeywordManager([{
+        'type': 'command',
+        'keyword': 'test',
+        'has_args': False,
+        'session_ignore': False,
+        'handler': None
+    }])
 
 
 class TestKeywordManager(object):
     def test_keyword_manager(self, keyword_manager):
-        self.assertEqual(len(keyword_manager.keywords), 1)
-        self.assertIsInstance(keyword_manager.keywords[0], KeywordCommand)
-        self.assertFalse(keyword_manager.keywords[0].session_ignore)
+        assert len(keyword_manager.keywords) == 1
+        assert isinstance(keyword_manager.keywords[0], KeywordCommand)
+        assert not keyword_manager.keywords[0].session_ignore
 
     def test_add(self, keyword_manager):
-        keyword_manager.add('command', 'test_2', False, None, session_ignore=False)
-        self.assertEqual(len(self.km.keywords), 2)
-        self.assertIsInstance(self.km.keywords[1], KeywordCommand)
-        self.assertFalse(self.km.keywords[1].session_ignore)
-        with self.assertRaises(ValueError):
-            self.km.add('command', 'test_2', False, None, session_ignore=False)
+        keyword_manager.add(
+            'command', 'test_2', False, None, session_ignore=False)
+        assert len(keyword_manager.keywords) == 2
+        assert isinstance(keyword_manager.keywords[1], KeywordCommand)
+        assert not keyword_manager.keywords[1].session_ignore
+        with pytest.raises(ValueError):
+            keyword_manager.add(
+                'command', 'test_2', False, None, session_ignore=False)
 
     def test_get(self, keyword_manager):
         command = keyword_manager.get('test')
-        self.assertIsInstance(command, KeywordCommand)
-        self.assertEquals(command.keyword, 'test')
-        self.assertIsNone(self.km.get('none'))
+        assert isinstance(command, KeywordCommand)
+        assert command.keyword == 'test'
+        assert keyword_manager.get('none') is None

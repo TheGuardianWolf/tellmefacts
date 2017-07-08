@@ -1,12 +1,14 @@
-from unittest import TestCase
+import pytest
 from client.services import RelayState, BotConnection
 
 
-class RelayStateTests(TestCase):
-    def setUp(self):
-        self.rs = RelayState()
+@pytest.fixture()
+def relay_state():
+    return RelayState()
 
-    def test_attrs(self):
+
+class TestRelayState(object):
+    def test_attrs(self, relay_state):
         bc = BotConnection('dummybot', 'http://dummybot')
-        self.rs.bot = bc
-        self.assertIs(self.rs.bot, bc)
+        relay_state.bot = bc
+        assert relay_state.bot is bc
