@@ -21,8 +21,7 @@ def client(tmpdir, mocker):
     fp.write(responses)
     fp.close()
     mocker.patch(
-        'client.service.bot_connections.BotConnection.ask',
-        return_value=(200, 'response'))
+        'client.services.BotConnection.ask', return_value=(200, 'response'))
     c = MultibotClient(
         config_path=tmpdir,
         input_adapter='chatterbot.input.VariableInputTypeAdapter',
@@ -49,24 +48,21 @@ class TestClient(object):
             client, 'start_session Interesting Facts'
         ) == 'You are now chatting with Interesting Facts.'
 
-        # mocker.patch.object(
-        #     client.bot.logic.state.bot, 'ask', return_value=(200, 'response'))
         assert self.query_bot(
-            self.random_string()) == 'Interesting Facts: response'
+            client, self.random_string()) == 'Interesting Facts: response'
         assert self.query_bot(
+            client,
             'end_session') == 'Chat session with Interesting Facts ended.'
 
     def test_multibot_chat(self, client):
-        self.assertEqual(
-            self.query_bot(client, 'list'), ('1. Interesting Facts\n'
-                                             '2. Strange Facts\n'
-                                             '3. Unusual Facts'))
+        assert self.query_bot(client, 'list'), ('1. Interesting Facts\n'
+                                                '2. Strange Facts\n'
+                                                '3. Unusual Facts')
 
-        for i, connection in enumerate(self.client.bot_connections):
-            self.assertEqual(
-                self.query_bot(client,
-                               'start_session {}'.format(connection['name'])),
-                'You are now chatting with {}.'.format(connection['name']))
+        for i, connection in enumerate(client.bot_connections):
+            assert self.query_bot(client, 'start_session {}'.format(
+                connection['name'])) == 'You are now chatting with {}.'.format(
+                    connection['name'])
             assert self.query_bot(
                 client, self.random_string()) == '{}: response'.format(
                     connection['name'])

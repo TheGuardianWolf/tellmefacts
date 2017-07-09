@@ -2,12 +2,12 @@ import pytest
 from client.services import Keyword, KeywordCommand, KeywordManager
 
 
-@pytest.fixture(params=[True, False])
-def keyword():
+@pytest.fixture(params=[True, False], ids=['has_args', 'no_args'])
+def keyword(request):
     def handler(i=None):
         return i
 
-    return Keyword('test', True, handler)
+    return Keyword('test', request.param, handler)
 
 
 class TestKeyword(object):

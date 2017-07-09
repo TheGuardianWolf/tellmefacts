@@ -18,28 +18,32 @@ def slack_adapter(mocker):
 
 class TestSlackOutputAdapter(object):
     def test_init(self, slack_adapter):
-        assert slack_adapter.user_id == 'fakeid'
-        assert slack_adapter.bot_id == 'fakebotid'
         assert slack_adapter.default_channel == '#general'
 
     def test_send_message(self, slack_adapter):
         slack_adapter.send_message(Statement('hi'), 'abcd')
-        print(slack_adapter.slack_client.api_call.call_args)
+        assert slack_adapter.slack_client.api_call.called
+        args, kwargs = slack_adapter.slack_client.api_call.call_args
+        assert kwargs['text'] == 'hi'
+        assert kwargs['channel'] == 'abcd'
+        assert not kwargs['as_user']
+
         slack_adapter.slack_client.server.websocket = True
         slack_adapter.send_message(Statement('hi'), 'abcd')
-        print(slack_adapter.slack_client.rtm_send_message.call_args)
-        assert 0
+        assert slack_adapter.slack_client.rtm_send_message.called
+        args, kwargs = slack_adapter.slack_client.rtm_send_message.call_args
+        assert kwargs['message'] == 'hi'
+        assert kwargs['channel'] == 'abcd'
 
-    def test_process_response(self, slack_adapter, mocker):
-        input_statement = Statement('input', extra_data={'channel': 'abcd'})
-
-        chatbot = mocker.patch.object(slack_adapter.chatbot)
-        chatbot.conversation_sessions = {'session_id': {}}
-
-        session = mocker.patch.object(
-            chatbot.conversation_sessions['session_id'])
-        session.conversation.return_value = input_statement
-
-        assert slack_adapter.process_response(Statement('test')) == 'test'
-        print(slack_adapter.slack_client.api_call.call_args)
-        assert 0
+    def test_process_response(self, slack_adapter, mocker, monkeypatch):
+        mock_sessions = mocker.Mock(conversation_sessions=mocker.Mock(
+            get=mocker.Mock(return_value=mocker.Mock(conversation=mocker.Mock(
+                get_last_input_statement=mocker.Mock(return_value=Statement(
+                    'input', extra_data={'channel': 'abcd'})))))))
+        monkeypatch.setattr(slack_adapter, 'chatbot', mock_sessions)
+        assert str(slack_adapter.process_response(Statement('test'))) == 'test'
+        assert slack_adapter.slack_client.api_call.called
+        args, kwargs = slack_adapter.slack_client.api_call.call_args
+        assert kwargs['text'] == 'test'
+        assert kwargs['channel'] == 'abcd'
+        assert not kwargs['as_user']

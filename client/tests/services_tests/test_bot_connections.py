@@ -9,17 +9,19 @@ def bot_connection():
 
 class TestBotConnection(object):
     def test_ask(self, mocker, bot_connection):
-        r = mocker.patch(
-            'client.services.bot_connection.requests.get', autospec=True)
-        r.json.return_value = {'response': 'hello'}
-        r.status_code = 200
-        (status, response_text) = self.bc.ask('test')
+        mock_response = {'response': 'hello'}
+        mocker.patch(
+            'client.services.bot_connections.get', return_value=mocker.Mock(
+                json=mocker.Mock(return_value=mock_response),
+                status_code=200
+            ))
+        (status, response_text) = bot_connection.ask('test')
         assert status == 200
         assert response_text == 'hello'
 
-        r.json.return_value = {}
+        del mock_response['response']
         with pytest.raises(ValueError):
-            self.bc.ask('test')
+            bot_connection.ask('test')
 
 
 @pytest.fixture()

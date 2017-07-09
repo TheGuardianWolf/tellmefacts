@@ -178,27 +178,30 @@ class TestMultibotRelayAdapter(object):
     def test_process_chat_while_connected(self, mocker, multibot_adapter):
         self.process(multibot_adapter, Statement('start_session test_bot_1'))
 
-        mock_success = (200, 'success')
+        mock_response = (200, 'success')
         mocker.patch.object(
-            multibot_adapter.state.bot, 'ask', return_value=mock_success)
+            multibot_adapter.state.bot, 'ask', return_value=mock_response)
         self.process(
             multibot_adapter,
             Statement('hello'),
             confidence=1,
             match='test_bot_1: success')
 
-        mock_not_found = (404, 'Not found')
-        mocker.patch.object(
-            multibot_adapter.state.bot, 'ask', return_value=mock_not_found)
+        mock_response[0] = 404
+        mock_response[1] = 'Not found'
+        # mock_not_found = (404, 'Not found')
+        # mocker.patch.object(
+        #     multibot_adapter.state.bot, 'ask', return_value=mock_not_found)
         self.process(
             multibot_adapter,
             Statement('hello'),
             confidence=1,
             match=('test_bot_1: Selected bot is currently unavailable, please '
                    'try again later. (Error: {})'.format('404')))
-
-        mocker.patch.object(
-            multibot_adapter.state.bot, 'ask', side_effect=ValueError)
+        
+        multibot_adapter.state.bot.ask.side_effect = ValueError
+        # mocker.patch.object(
+        #     multibot_adapter.state.bot, 'ask', side_effect=ValueError)
         self.process(
             multibot_adapter,
             Statement('hello'),
