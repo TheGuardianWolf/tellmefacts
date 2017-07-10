@@ -20,20 +20,25 @@ class TestSlackOutputAdapter(object):
     def test_init(self, slack_adapter):
         assert slack_adapter.default_channel == '#general'
 
-    def test_send_message(self, slack_adapter):
+    def test_send_message(self, slack_adapter, monkeypatch):
         slack_adapter.send_message(Statement('hi'), 'abcd')
+        assert slack_adapter.events.get('send').is_set()
         assert slack_adapter.slack_client.api_call.called
         args, kwargs = slack_adapter.slack_client.api_call.call_args
         assert kwargs['text'] == 'hi'
         assert kwargs['channel'] == 'abcd'
         assert not kwargs['as_user']
+        slack_adapter.events.get('send').clear()
 
-        slack_adapter.slack_client.server.websocket = True
+        monkeypatch.setattr(slack_adapter.slack_client.server, 'websocket',
+                            True)
         slack_adapter.send_message(Statement('hi'), 'abcd')
+        assert slack_adapter.events.get('send').is_set()
         assert slack_adapter.slack_client.rtm_send_message.called
         args, kwargs = slack_adapter.slack_client.rtm_send_message.call_args
         assert kwargs['message'] == 'hi'
         assert kwargs['channel'] == 'abcd'
+        slack_adapter.events.get('send').clear()
 
     def test_process_response(self, slack_adapter, mocker, monkeypatch):
         mock_sessions = mocker.Mock(conversation_sessions=mocker.Mock(
@@ -41,9 +46,22 @@ class TestSlackOutputAdapter(object):
                 get_last_input_statement=mocker.Mock(return_value=Statement(
                     'input', extra_data={'channel': 'abcd'})))))))
         monkeypatch.setattr(slack_adapter, 'chatbot', mock_sessions)
+
         assert str(slack_adapter.process_response(Statement('test'))) == 'test'
+        assert slack_adapter.events.get('send').is_set()
         assert slack_adapter.slack_client.api_call.called
         args, kwargs = slack_adapter.slack_client.api_call.call_args
         assert kwargs['text'] == 'test'
         assert kwargs['channel'] == 'abcd'
         assert not kwargs['as_user']
+        slack_adapter.events.get('send').clear()
+
+        monkeypatch.setattr(slack_adapter.slack_client.server, 'websocket',
+                            True)
+        assert str(slack_adapter.process_response(Statement('test'))) == 'test'
+        assert slack_adapter.events.get('send').is_set()
+        assert slack_adapter.slack_client.rtm_send_message.called
+        args, kwargs = slack_adapter.slack_client.rtm_send_message.call_args
+        assert kwargs['message'] == 'test'
+        assert kwargs['channel'] == 'abcd'
+        slack_adapter.events.get('send').clear()

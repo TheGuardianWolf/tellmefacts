@@ -1,21 +1,26 @@
-from threading import Event, Thread
-from queue import Queue, Empty
+from threading import Thread
+from queue import Empty
 from slackclient import SlackClient
 from chatterbot.input import InputAdapter
 from chatterbot.conversation import Statement
 from re import compile
 from time import sleep
+from client.services import EventManager
 
 
 class Slack(InputAdapter):
-    event_types = ['ready', 'message']
     """description of class"""
 
     def __init__(self, **kwargs):
         super(Slack, self).__init__(**kwargs)
-        self.events = {}
-        for event in self.event_types:
-            self.events[event] = self.SlackEvent(event)
+        self.events = kwargs.get('event_manager')
+        if self.events is None:
+            self.events = EventManager(
+                ['input_ready', 'message', 'input_close'])
+        else:
+            self.events.add('input_ready')
+            self.events.add('message')
+            self.events.add('input_close')
 
         self.bot_user_token = kwargs.get('bot_user_token')
         self.bot_name = kwargs.get('bot_name', 'tellmefacts')
@@ -53,21 +58,21 @@ class Slack(InputAdapter):
         self.logger.info('starting Slack RTM')
 
         if self.slack_client.rtm_connect():
-            self.events.get('ready').set()
+            self.events.get('input_ready').set()
             self.logger.info('Slack RTM: connected, starting event loop')
             self.event_thread = Thread(
-                target=self.event_loop, args=(1, ), daemon=True)
+                target=self.event_loop, args=(0.1, ), daemon=True)
             self.event_thread.start()
 
     def close(self):
         ''' Must use the close method to end the Slack RTM event loop '''
-        self.logger.info('Slack RTM: shutting down')
-        self.events.get('ready').clear()
+        self.events.get('input_close').set()
+        self.logger.info('Slack RTM: waiting for shutdown')
         self.event_thread.join(timeout=5)
         self.logger.info('Slack RTM: shutdown successful')
 
     def event_loop(self, polling_rate=0.1):
-        while self.events.get('ready').is_set():
+        while not self.events.get('input_close').is_set():
             rtm_list = self.slack_client.rtm_read()
             for rtm_object in rtm_list:
                 event_type = rtm_object.get('type', 'confirm_send')
@@ -77,13 +82,18 @@ class Slack(InputAdapter):
                     self.events.get(event_type).data.put(rtm_object)
                     self.events.get(event_type).set()
             sleep(polling_rate)
+        self.events.get('input_ready').clear()
         self.logger.info('Slack RTM: event loop stopped')
 
     def process_input(self, statement):
         data = False
         while not data:
+            if (self.events.get('input_close').is_set()):
+                return None
             event = False
             while not event:
+                if (self.events.get('input_close').is_set()):
+                    return None
                 try:
                     event = self.events.get('message').data.get(timeout=1)
                 except Empty:
@@ -103,21 +113,3 @@ class Slack(InputAdapter):
         statement = Statement(data['matched_text'], extra_data=data)
         self.logger.info('processing user statement {}'.format(statement))
         return statement
-
-    class SlackEvent(object):
-        def __init__(self, type):
-            self.type = type
-            self.event = Event()
-            self.data = Queue()
-
-        def set(self):
-            return self.event.set()
-
-        def is_set(self):
-            return self.event.is_set()
-
-        def clear(self):
-            return self.event.clear()
-
-        def wait(self, **kwargs):
-            return self.event.wait(**kwargs)

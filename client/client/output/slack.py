@@ -1,5 +1,6 @@
 from slackclient import SlackClient
 from chatterbot.output import OutputAdapter
+from client.services import EventManager
 
 
 class Slack(OutputAdapter):
@@ -7,6 +8,11 @@ class Slack(OutputAdapter):
 
     def __init__(self, **kwargs):
         super(Slack, self).__init__(**kwargs)
+        self.events = kwargs.get('event_manager')
+        if self.events is None:
+            self.events = EventManager(['send'])
+        else:
+            self.events.add('send')
         self.bot_user_token = kwargs.get('bot_user_token')
         self.slack_client = kwargs.get('slack_client',
                                        SlackClient(self.bot_user_token))
@@ -29,6 +35,7 @@ class Slack(OutputAdapter):
 
             self.logger.info('Slack API responded with \'ok:{}\''.format(
                 r.get('ok', False)))
+        self.events.get('send').set()
 
     def process_response(self, statement, session_id=None):
         input_statement = self.chatbot.conversation_sessions.get(
@@ -37,5 +44,4 @@ class Slack(OutputAdapter):
                                                  self.default_channel)
 
         self.send_message(statement, channel)
-
         return statement

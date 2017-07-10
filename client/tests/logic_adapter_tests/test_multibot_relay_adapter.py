@@ -178,7 +178,7 @@ class TestMultibotRelayAdapter(object):
     def test_process_chat_while_connected(self, mocker, multibot_adapter):
         self.process(multibot_adapter, Statement('start_session test_bot_1'))
 
-        mock_response = (200, 'success')
+        mock_response = [200, 'success']
         mocker.patch.object(
             multibot_adapter.state.bot, 'ask', return_value=mock_response)
         self.process(

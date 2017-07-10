@@ -8,7 +8,7 @@ def relay_state():
 
 
 class TestRelayState(object):
-    def test_attrs(self, relay_state):
+    def test_relay_state(self, relay_state):
         bc = BotConnection('dummybot', 'http://dummybot')
         relay_state.bot = bc
         assert relay_state.bot is bc

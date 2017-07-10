@@ -2,7 +2,7 @@ from re import compile
 
 
 class Keyword(object):
-    def __init__(self, keyword, has_args, handler, **kwargs):
+    def __init__(self, keyword, has_args, handler):
         self.keyword = keyword
         self.has_args = has_args
         self.handler = handler
@@ -24,8 +24,7 @@ class KeywordCommand(Keyword):
         return self.command_regexp.match(test)
 
     def __init__(self, keyword, has_args, handler, **kwargs):
-        super(KeywordCommand, self).__init__(keyword, has_args, handler,
-                                             **kwargs)
+        super(KeywordCommand, self).__init__(keyword, has_args, handler)
         self.session_ignore = kwargs.get('session_ignore', False)
 
 

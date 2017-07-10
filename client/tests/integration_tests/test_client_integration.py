@@ -13,6 +13,41 @@ TEST_CONFIG_PATH = path.join(path.dirname(path.realpath(__file__)), 'config')
 BOT_ID = 'fakebotid'
 USER_ID = 'fakeid'
 CHANNEL = 'abcd'
+DUMMYBOTS = {
+    'available': False,
+    'tested': False
+}
+
+
+def check_dummybots():
+    global DUMMYBOTS
+    if not DUMMYBOTS['tested']:
+        DUMMYBOTS['tested'] = True
+
+        fp = open(path.join(TEST_CONFIG_PATH, 'bots.json'), 'r')
+        bot_connections = loads(fp.read())
+        fp.close()
+
+        def worker(bot_url):
+            try:
+                r = head('{}/askmeanything?q=test'.format(bot_url), timeout=5)
+                assert r.ok
+                return r
+            except (RequestException, AssertionError):
+                return None
+
+        urls = []
+        for connection in bot_connections:
+            urls.append(connection['url'])
+
+        pool = ThreadPool(processes=3)
+        bot_available = pool.map(worker, urls)
+
+        for i, available in enumerate(bot_available):
+            if available is None:
+                DUMMYBOTS['available'] = False
+                return
+        DUMMYBOTS['available'] = True
 
 
 @pytest.fixture(params=[True, False], ids=['patch_ask', 'no_patch_ask'])
@@ -24,10 +59,14 @@ def patch_bot_ask(request, mocker):
     else:
         if not pytest.config.getoption('--dummybot'):
             pytest.skip('need --dummybot option to run')
+        else:
+            check_dummybots()
+            if not DUMMYBOTS.get('available'):
+                pytest.xfail('one or more dummybot servers are unreachable')
 
 
 @pytest.fixture()
-def multibot_client(mocker, patch_bot_ask):
+def client(mocker, monkeypatch, patch_bot_ask):
     mock_api_call = {
         'ok': True,
         'user_id': USER_ID,
@@ -48,7 +87,8 @@ def multibot_client(mocker, patch_bot_ask):
         return_value=events_input)
     m_rtm_s = mocker.patch('slackclient.SlackClient.rtm_send_message')
     c = MultibotClient(config_path=TEST_CONFIG_PATH)
-    t = Thread(target=c.start, daemon=True)
+    monkeypatch.setattr(c.slack_client.server, 'websocket', True)
+    t = Thread(target=c.start, args=())
     return_object = {
         'client': c,
         'events_input': events_input,
@@ -57,45 +97,17 @@ def multibot_client(mocker, patch_bot_ask):
         'rtm_read': m_rtm_r,
         'rtm_send_message': m_rtm_s
     }
+    t.start()
     yield return_object
-    try:
-        c.bot.input.close()
-    except AttributeError:
-        pass
+    c.close()
     t.join()
-    c.bot.storage.drop()
-
-
-@pytest.fixture(scope='session')
-def dummybot_servers():
-    fp = open(path.join(TEST_CONFIG_PATH, 'bots.json'), 'r')
-    bot_connections = loads(fp.read())
-    fp.close()
-
-    def worker(bot_url):
-        try:
-            r = head('{}/askmeanything?q=test'.format(bot_url), timeout=5)
-            assert r.ok
-            return r
-        except (RequestException, AssertionError):
-            return None
-
-    urls = []
-    for connection in bot_connections:
-        urls.append(connection['url'])
-
-    pool = ThreadPool(processes=3)
-    bot_available = pool.map(worker, urls)
-
-    for i, available in enumerate(bot_available):
-        if available is None:
-            raise ValueError('{} cannot be reached at {}.'.format(
-                bot_connections[i]['name'], bot_connections[i]['url']))
 
 
 class TestClientIntegration(object):
     def query_bot(self, client, query):
-        multibot_client.get('events_input').append({
+        read_count = client.get('rtm_read').call_count
+        send_count = client.get('rtm_send_message').call_count
+        client.get('events_input').append({
             'type':
             'message',
             'text':
@@ -103,11 +115,13 @@ class TestClientIntegration(object):
             'channel':
             CHANNEL
         })
-        read_count = client.get('rtm_read').call_count
-        send_count = client.get('rtm_send_message').call_count
-        client.get('client').bot.input.events.get('message').wait(timeout=1)
+        has_event = client.get('client').events.get('message').wait(timeout=1)
+        assert has_event
         del client.get('events_input')[:]
-        assert client.get('rtm_read').call_count - read_count == 1
+        has_event = client.get('client').events.get('send').wait(timeout=1)
+        assert has_event
+        client.get('client').events.get('send').clear()
+        assert client.get('rtm_read').call_count - read_count >= 1
         assert client.get('rtm_send_message').call_count - send_count == 1
         args, kwargs = client.get('rtm_send_message').call_args
         assert kwargs.get('channel') == CHANNEL
@@ -119,7 +133,7 @@ class TestClientIntegration(object):
         '''
         return str(randint(start, end))
 
-    def test_simple_chat(self, client, mocker):
+    def test_simple_chat(self, client):
         assert self.query_bot(client, 'list') == ('1. Interesting Facts\n'
                                                   '2. Strange Facts\n'
                                                   '3. Unusual Facts')
@@ -138,13 +152,12 @@ class TestClientIntegration(object):
                                                 '2. Strange Facts\n'
                                                 '3. Unusual Facts')
 
-        for i, connection in enumerate(client.bot_connections):
+        for i, connection in enumerate(client.get('client').bot_connections):
             assert self.query_bot(client, 'start_session {}'.format(
                 connection['name'])) == 'You are now chatting with {}.'.format(
                     connection['name'])
             assert self.query_bot(
-                client, self.random_string()) == '{}: response'.format(
-                    connection['name'])
+                client, self.random_string()).find(connection['name']) == 0
             assert self.query_bot(
                 client, 'end_session') == 'Chat session with {} ended.'.format(
                     connection['name'])

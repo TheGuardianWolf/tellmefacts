@@ -15,7 +15,7 @@ def main():
         help='run tests before starting client (skipping optional)')
     parser.add_argument(
         '--only-tests',
-        dest='with_tests_all',
+        dest='only_tests',
         action='store_true',
         help='run all tests including optional, don\'t start client')
     parser.add_argument(

@@ -38,12 +38,12 @@ class TestSlackInputAdapter(object):
 
     def test_start(self, slack_adapter):
         slack_adapter.start()
-        assert slack_adapter.events.get('ready').is_set()
+        assert slack_adapter.events.get('input_ready').is_set()
 
     def test_close(self, slack_adapter):
         slack_adapter.start()
         slack_adapter.close()
-        assert not slack_adapter.events.get('ready').is_set()
+        assert not slack_adapter.events.get('input_ready').is_set()
         assert slack_adapter.event_thread is not None
 
     def test_event_loop(self, slack_adapter, mocker):
@@ -54,9 +54,8 @@ class TestSlackInputAdapter(object):
         mocker.patch(
             'slackclient.SlackClient.rtm_read', return_value=mock_events)
         slack_adapter.start()
-        assert slack_adapter.events.get('ready').is_set()
+        assert slack_adapter.events.get('input_ready').is_set()
         assert slack_adapter.events.get('message').wait(timeout=1)
-        assert slack_adapter.events.get('message').is_set()
         message_data = slack_adapter.events.get('message').data.get_nowait()
         assert message_data is mock_events[0]
 
@@ -66,13 +65,6 @@ class TestSlackInputAdapter(object):
             'text': '<@fakeid> test'
         }
         slack_adapter.events.get('message').data.put(mock_message)
-        slack_adapter.events.get('message').set()
         statement = slack_adapter.process_input(None)
         assert str(statement) == 'test'
         assert statement.extra_data is mock_message
-
-    def test_slack_event(self):
-        se = Slack.SlackEvent('message')
-        assert se.type == 'message'
-        assert isinstance(se.event, Event)
-        assert isinstance(se.data, Queue)

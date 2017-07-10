@@ -11,13 +11,18 @@ def keyword(request):
 
 
 class TestKeyword(object):
+    def test_keyword(self, keyword):
+        assert keyword.keyword == 'test'
+        assert isinstance(keyword.has_args, bool)
+        assert callable(keyword.handler)
+
     def test_handle(self, keyword):
         if keyword.has_args:
             assert keyword.handle(True)
         else:
             assert keyword.handle() is None
             with pytest.raises(ValueError):
-                keyword.handle(True)
+                keyword.handle('args')
 
 
 @pytest.fixture()

@@ -8,6 +8,10 @@ def bot_connection():
 
 
 class TestBotConnection(object):
+    def test_bot_connection(self, bot_connection):
+        assert bot_connection.name == 'dummybot'
+        assert bot_connection.url == 'http://dummybot'
+
     def test_ask(self, mocker, bot_connection):
         mock_response = {'response': 'hello'}
         mocker.patch(

@@ -1,3 +1,4 @@
 requests
 cherrypy
 pytest
+sphinx_rtd_theme

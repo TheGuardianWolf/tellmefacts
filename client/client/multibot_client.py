@@ -5,6 +5,7 @@ from json import loads
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
+from client.services import EventManager
 
 
 class MultibotClient(object):
@@ -18,6 +19,8 @@ class MultibotClient(object):
                  output_adapter='client.output.Slack'):
         self.__config(config_path, input_adapter, output_adapter)
 
+        self.events = EventManager(['close'])
+        self.slack_client = SlackClient(self.slack_api.get('bot_user_token'))
         self.bot = ChatBot(
             'Multibot',
             database=None,
@@ -32,7 +35,8 @@ class MultibotClient(object):
             }],
             bot_user_token=self.slack_api.get('bot_user_token'),
             bot_name=self.slack_api.get('bot_name'),
-            slack_client=SlackClient(self.slack_api.get('bot_user_token')))
+            slack_client=self.slack_client,
+            event_manager=self.events)
 
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
@@ -52,17 +56,22 @@ class MultibotClient(object):
             fp.close()
 
     def start(self):
-        # The following loop will execute each time the user enters input
-        while True:
-            try:
-                # We pass None to this method because the parameter
-                # is not used by the TerminalAdapter
-                self.bot.get_response(None)
-
-            # Press ctrl-c or ctrl-d on the keyboard to exit
-            except (KeyboardInterrupt, EOFError, SystemExit):
+        try:
+            # The following loop will execute each time the user enters input
+            while not self.events.get('close').is_set():
                 try:
-                    self.bot.input.close()
-                except AttributeError:
-                    pass
-                break
+                    self.bot.get_response(None)
+                except AttributeError as e:
+                    if not str(e) == '\'NoneType\' object has no attribute \'text\'':
+                        raise e
+        # Press ctrl-c or ctrl-d on the keyboard to exit
+        except (KeyboardInterrupt, EOFError, SystemExit):
+            self.close()
+
+    def close(self):
+        self.events.get('close').set()
+        try:
+            self.bot.input.close()
+            self.bot.storage.drop()
+        except AttributeError:
+            pass
