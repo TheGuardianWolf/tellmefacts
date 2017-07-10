@@ -27,7 +27,7 @@ class Slack(InputAdapter):
         self.slack_client = kwargs.get('slack_client',
                                        SlackClient(self.bot_user_token))
         self.user_id = self.get_user_id()
-        self.bot_id = self.get_bot_id(self.user_id)
+        self.bot_id = self.get_bot_id()
         self.bot_mention = compile('^<@{}> (.*)$'.format(self.user_id))
         if kwargs.get('start_event_loop', True):  # Used for testing
             self.start()
@@ -43,7 +43,7 @@ class Slack(InputAdapter):
             raise LookupError(
                 'Could not find bot user id \'{}\'.'.format(self.bot_name))
 
-    def get_bot_id(self, user_id):
+    def get_bot_id(self):
         self.logger.info('attempting to find bot ID from Slack')
         api_call = self.slack_client.api_call('users.info', user=self.user_id)
         if api_call.get('ok') and 'user' in api_call:
