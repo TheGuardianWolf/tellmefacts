@@ -73,7 +73,7 @@ class TestKeywordManager(object):
         assert isinstance(keyword_manager.keywords[0], KeywordCommand)
         assert not keyword_manager.keywords[0].session_ignore
 
-    def test_add(self, keyword_manager):
+    def test_add_command(self, keyword_manager):
         keyword_manager.add(
             'command', 'test_2', False, None, session_ignore=False)
         assert len(keyword_manager.keywords) == 2
@@ -82,6 +82,11 @@ class TestKeywordManager(object):
         with pytest.raises(ValueError):
             keyword_manager.add(
                 'command', 'test_2', False, None, session_ignore=False)
+
+    def test_add_invalid(self, keyword_manager):
+        with pytest.raises(ValueError):
+            keyword_manager.add(
+                'invalid', 'test_2', False, None, session_ignore=False)
 
     def test_get(self, keyword_manager):
         command = keyword_manager.get('test')

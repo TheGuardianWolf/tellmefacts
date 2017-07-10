@@ -2,5 +2,6 @@ requests
 chatterbot
 pytest
 pytest-mock
+pytest-cov
 slackclient
 sphinx_rtd_theme
