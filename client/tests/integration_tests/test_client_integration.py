@@ -100,7 +100,7 @@ def client(mocker, monkeypatch, patch_bot_ask):
     t.start()
     yield return_object
     c.close()
-    t.join()
+    t.join(timeout=5)
 
 
 class TestClientIntegration(object):
@@ -128,9 +128,9 @@ class TestClientIntegration(object):
         return kwargs.get('message')
 
     def random_string(self, start=0, end=9000):
-        '''
+        """
         Generate a string based on a random number.
-        '''
+        """
         return str(randint(start, end))
 
     def test_simple_chat(self, client):

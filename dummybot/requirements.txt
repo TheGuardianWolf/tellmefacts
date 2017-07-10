@@ -1,4 +1,5 @@
 requests
 cherrypy
 pytest
+pytest-cov
 sphinx_rtd_theme

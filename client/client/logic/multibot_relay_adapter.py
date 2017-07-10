@@ -5,6 +5,10 @@ from client.services import (KeywordManager, BotConnectionManager, RelayState,
 
 
 class MultibotRelayAdapter(LogicAdapter):
+    """
+    Multiplexes chat conversations to supported bots.
+    """
+
     def __init__(self, **kwargs):
         super(MultibotRelayAdapter, self).__init__(**kwargs)
 
@@ -33,13 +37,26 @@ class MultibotRelayAdapter(LogicAdapter):
         }])
 
     def process(self, statement):
+        """
+        Infer either a command or chat message from the given statement.
+
+        :param statement: An input statement to be processed.
+        :type statement: Statement
+
+        :returns: A processed response.
+        :rtype: Statement
+        """
         response_statement = Statement('')
         response_statement.confidence = 0
+
+        # Look for a keyword command template match
         result = KeywordCommand.match(statement.text)
 
+        # Possible command
         if result is not None:
             command = self.keywords.get(result.group(1))
             if command is not None:
+                # Currently not connected, or command is not set to be ignored
                 if self.state.bot is None or not command.session_ignore:
                     try:
                         response_statement = Statement(
@@ -50,10 +67,13 @@ class MultibotRelayAdapter(LogicAdapter):
                         # Happens when args not provided
                         pass
 
+        # Statement treated as message to be sent to the selected bot
         if self.state.bot is not None:
+            # Send a request for a response from the bot
             response_statement = Statement(self.bot_request(statement.text))
             response_statement.confidence = 1
         else:
+            # No bot selected
             response_statement = Statement(
                 ('You are currently not connected to any bot. '
                  'Connect to a bot with \'start_session <bot_name>\' or '
@@ -62,15 +82,24 @@ class MultibotRelayAdapter(LogicAdapter):
         return response_statement
 
     def bot_request(self, text):
-        bot = self.state.bot
+        """
+        Send a request for a response to the currently selected
+        `BotConnection`.
 
+        :param text A message to send to the selected bot.
+
+        :returns: A response from the bot.
+        """
+        bot = self.state.bot
         try:
             (status, response) = bot.ask(text)
             assert status == 200
         except AssertionError:
+            # Some HTTP error occured
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: {})'.format(str(status)))
         except ValueError:
+            # Some connection error occured
             response = ('Selected bot is currently unavailable, please try '
                         'again later. (Error: Connection not established)')
 
@@ -79,14 +108,28 @@ class MultibotRelayAdapter(LogicAdapter):
         return response_statement
 
     def list(self):
+        """
+        List the currently available `BotConnection`s.
+
+        :returns: A formatted text list of available bots.
+        """
         statement = ''
         for i, bot in enumerate(self.bot_connections.all()):
             statement += '{}. {}\n'.format(str(i + 1), bot.name)
-        statement = statement.rstrip('\n')
+        statement = statement.rstrip('\n')  # Remove the last newline
         return statement
 
     def start_session(self, args=None):
+        """
+        Set a bot as the current `BotConnection`.
+
+        :param args The name of a bot.
+
+        :returns: A text response based on current connected status.
+        """
+        # Assign new bot if not set
         if self.state.bot is None:
+            # Error if no args was provided
             if args is None or len(args) == 0:
                 return ('No bot name was provided. Type \'list\' to see'
                         ' available bots.')
@@ -101,11 +144,19 @@ class MultibotRelayAdapter(LogicAdapter):
         else:
             return 'You are already in a chat session with {}!'.format(
                 self.state.bot.name)
-
+        
+        # Nothing found with that name
         return ('Sorry, no bot with that name was found. Type \'list\' to '
                 'see available bots.')
 
     def end_session(self):
+        """
+        Remove the currently selected `BotConnection`.
+
+        :returns: A status message.
+        """
+
+        # Set current bot to None if is set
         if self.state.bot is None:
             return 'You are currently not in an active session.'
         else:

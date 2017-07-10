@@ -6,19 +6,26 @@ from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
 from client.services import EventManager
+from slackclient._slackrequest import SlackRequest
 
 
 class MultibotClient(object):
+    """
+    A Slackbot conversation multiplexer.
+    """
+
+    # Resolve file paths
     root = path.dirname(getfile(import_module('client')))
     config_path = path.join(root, 'config')
-    """description of class"""
 
     def __init__(self,
                  config_path=config_path,
                  input_adapter='client.input.Slack',
-                 output_adapter='client.output.Slack'):
-        self.__config(config_path, input_adapter, output_adapter)
-
+                 output_adapter='client.output.Slack',
+                 api_hostname=None):
+        self.config(config_path, input_adapter, output_adapter)
+        if api_hostname is not None:
+            self.patch_slack_requests(api_hostname)
         self.events = EventManager(['close'])
         self.slack_client = SlackClient(self.slack_api.get('bot_user_token'))
         self.bot = ChatBot(
@@ -38,16 +45,28 @@ class MultibotClient(object):
             slack_client=self.slack_client,
             event_manager=self.events)
 
+        # Put placeholder data into the chatterbot storage otherwise it picks
+        # the no-knowledge adapter's response always
         self.bot.set_trainer(ListTrainer)
         self.bot.train(['placeholder'])
 
+        # Set bot to not learn from conversations
         self.bot.read_only = True
 
-    def __config(self, config_path, input_adapter, output_adapter):
+    def config(self, config_path, input_adapter, output_adapter):
+        """
+        Load configurations from config files.
+
+        :param config_path: Path to the config folder.
+        :param input_adapter: An import path for the input_adapter module.
+        :param output_adapter: An import path for the output_adapter module.
+        """
+        # Load bots configuration
         fp = open(path.join(config_path, 'bots.json'))
         self.bot_connections = loads(fp.read())
         fp.close()
 
+        # Load slack api configuration
         self.slack_api = {}
         if input_adapter == 'client.input.Slack' or \
                 output_adapter == 'client.output.Slack':
@@ -55,20 +74,49 @@ class MultibotClient(object):
             self.slack_api = loads(fp.read())
             fp.close()
 
+    def patch_slack_requests(self, api_hostname):
+        """
+        Patch the slack requests module to send to a host other than slack.com
+
+        :param api_hostname: A valid hostname (e.g. slack.com).
+        """
+        slack_client_do = SlackRequest.do
+
+        def patched_do(obj,
+                       token,
+                       request="?",
+                       post_data=None,
+                       domain=api_hostname,
+                       timeout=None):
+            return slack_client_do(obj, token, request, post_data, domain,
+                                   timeout)
+
+        SlackRequest.do = patched_do
+
     def start(self):
+        """
+        Start parsing input from the input adapter.
+        """
         try:
             # The following loop will execute each time the user enters input
             while not self.events.get('close').is_set():
                 try:
                     self.bot.get_response(None)
                 except AttributeError as e:
-                    if not str(e) == '\'NoneType\' object has no attribute \'text\'':
+                    # When close event is set, None is returned and causes an
+                    # exception that needs to be caught
+                    if not str(
+                            e
+                    ) == '\'NoneType\' object has no attribute \'text\'':
                         raise e
-        # Press ctrl-c or ctrl-d on the keyboard to exit
+        # Press ctrl-c or on the keyboard to exit
         except (KeyboardInterrupt, EOFError, SystemExit):
             self.close()
 
     def close(self):
+        """
+        Trigger close event and signal running threads to close.
+        """
         self.events.get('close').set()
         try:
             self.bot.input.close()

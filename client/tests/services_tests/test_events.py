@@ -29,8 +29,7 @@ class TestEventManager(object):
     def test_get(self, event_manager):
         assert isinstance(event_manager.get('close'), DataEvent)
         assert isinstance(event_manager.get('ready'), DataEvent)
-        with pytest.raises(KeyError):
-            assert event_manager.get('none')
+        assert event_manager.get('none') is None
 
     def test_add(self, event_manager):
         event_manager.add('test')

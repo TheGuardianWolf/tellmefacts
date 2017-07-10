@@ -1,9 +1,31 @@
 #!/usr/bin/env python3
+
+"""
+This is the launcher for the multibot-client application.
+
+    usage: run_client.py [-h] [--with-tests] [--only-tests]
+                        [--config-dir CONFIG_DIR] [--api-hostname API_HOSTNAME]
+                        [--terminal] [--verbose]
+
+    Launches the slackbot client.
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    --with-tests          run tests before starting client (skipping optional)
+    --only-tests          run all tests including optional, don't start client
+    --config-dir CONFIG_DIR
+                            changes the config directory
+    --api-hostname API_HOSTNAME
+                            sets a hostname other than slack.com
+    --terminal            set bot to run in terminal mode
+    --verbose             display all logging information on terminal
+"""
+
+import pytest
+import logging
 from client import MultibotClient
 from argparse import ArgumentParser
 from sys import exit
-import pytest
-import logging
 
 
 def main():

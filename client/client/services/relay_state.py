@@ -1,4 +1,7 @@
 class RelayState(object):
-    """description of class"""
+    """
+    Represents the current state of a relay object.
+    """
+
     def __init__(self):
-        self.bot = None
+        self.bot = None  # Currently connected bot `BotConnection`
