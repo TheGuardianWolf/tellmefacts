@@ -1,24 +1,33 @@
-from unittest import TestCase
+# -*- coding: utf-8 -*-
+import pytest
 from random import randint
 from dummybot.controllers import RandomResponse
 from re import compile
 
 
-class RandomResponseTests(TestCase):
-    def setUp(self):
-        self.responses = ['1234', '4456', '9846']
-        self.response_template = compile('^#([0-9]+) (.*)$')
-        self.random_response = RandomResponse(self.responses)
+@pytest.fixture()
+def random_response():
+    responses = ['1234', '4456', '9846']
+    return RandomResponse(responses)
 
-    def test_get(self):
-        response_object = self.random_response.GET(str(randint(0, 9000)))
 
-        self.assertIsInstance(response_object, dict)
-        self.assertIn('response', response_object)
+class RandomResponseTests(object):
+    # Responses must match this pattern
+    response_pattern = compile('^#([0-9]+) (.*)$')
 
-        self.assertIsInstance(response_object['response'], str)
-        cap = self.response_template.match(response_object['response'])
-        self.assertIn(cap.group(2), self.responses)
-        for i, response in enumerate(self.responses):
+    def test_random_response(self, random_response):
+        assert isinstance(random_response, list)
+        assert len(random_response.responses) == 3
+
+    def test_get(self, random_response):
+        response_object = random_response.GET(str(randint(0, 9000)))
+
+        assert isinstance(response_object, dict)
+        assert 'response' in response_object
+
+        assert isinstance(response_object['response'], str)
+        cap = self.response_pattern.match(response_object['response'])
+        assert cap.group(2) in random_response.responses
+        for i, response in enumerate(random_response.responses):
             if (response == cap.group(2)):
-                self.assertEqual(i + 1, int(cap.group(1)))
+                assert i + 1 == int(cap.group(1))

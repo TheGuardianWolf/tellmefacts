@@ -49,7 +49,7 @@ class MultibotRelayAdapter(LogicAdapter):
         response_statement = Statement('')
         response_statement.confidence = 0
 
-        # Look for a keyword command template match
+        # Look for a keyword command pattern match
         result = KeywordCommand.match(statement.text)
 
         # Possible command

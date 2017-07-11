@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
+from chatterbot.conversation import Statement
 from client import MultibotClient
 from random import randint
 from json import dumps
@@ -13,6 +14,7 @@ def client(tmpdir, mocker):
     """
     Creates and patches for a multibot client object.
     """
+    # Create and write a bots.json file to the temp directory
     responses = dumps([{
         'name': 'Interesting Facts',
         'url': 'http://dummybot_1'
@@ -26,13 +28,19 @@ def client(tmpdir, mocker):
     fp = open(path.join(tmpdir, 'bots.json'), 'w')
     fp.write(responses)
     fp.close()
+
+    # Patch asking bots for a response to be always successful
     mocker.patch(
         'client.services.BotConnection.ask', return_value=(200, 'response'))
+
+    # Create client with simple adapters to read from and write to
     c = MultibotClient(
         config_path=tmpdir,
         input_adapter='chatterbot.input.VariableInputTypeAdapter',
         output_adapter='chatterbot.output.OutputAdapter')
     yield c
+
+    # Cleanup with the close function
     c.close()
 
 
@@ -54,7 +62,26 @@ class TestMultibotClient(object):
         Test whether a request is sent to a different hostname after patching
         the Slack Requests class.
         """
-        pass
+        # Patch required objects for requests
+        m_post = mocker.patch(
+            'slackclient._slackrequest.requests.post',
+            autospec=True,
+            return_value=mocker.Mock(text='{"ok":true}'))
+        client.patch_slack_requests('localhost')
+
+        # Send a message via slack api call
+        client.bot.output.send_message(Statement('test'), '#general')
+
+        # Check the post request parameters are as expected
+        assert m_post.called
+        args, kwargs = m_post.call_args
+        assert kwargs.get('url') == 'https://{0}/api/{1}'.format(
+            'localhost', 'chat.postMessage')
+        assert 'user-agent' in kwargs.get('headers')
+        assert kwargs.get('data') is None
+        assert kwargs.get('files') is None
+        assert kwargs.get('timeout') is None
+        assert kwargs.get('proxies') is None
 
     def test_simple_chat(self, client, mocker):
         """
@@ -81,6 +108,8 @@ class TestMultibotClient(object):
                                                 '2. Strange Facts\n'
                                                 '3. Unusual Facts')
 
+        # Test connecting to, chatting with, and disconnecting from all bot
+        # connections
         for i, connection in enumerate(client.bot_connections):
             assert self.query_bot(client, 'start_session {}'.format(
                 connection['name'])) == 'You are now chatting with {}.'.format(
@@ -96,14 +125,19 @@ class TestMultibotClient(object):
         """
         Test whether a chat with invalid commands being sent goes as expected.
         """
+        # Try to chat when not connected to a bot
         rand = self.random_string()
         assert self.query_bot(client, rand) == (
             'You are currently not connected to any bot. '
             'Connect to a bot with \'start_session <bot_name>\' or '
             'type \'list\' for a list of available bots.')
+
+        # Try to end the session without being in a session
         assert self.query_bot(
             client,
             'end_session') == 'You are currently not in an active session.'
+
+        # Try to start a new session whilst a session is currently in place
         assert self.query_bot(client, 'start_session Unusual Facts'
                               ) == 'You are now chatting with Unusual Facts.'
         assert self.query_bot(
@@ -125,9 +159,12 @@ class TestMultibotClient(object):
         """
         Test closing the application from a seperate thread.
         """
+
         def wait_response(*args):
             sleep(0.5)
 
+        # Patch get_response to wait an amount of time instead of raising an
+        # exception with the default None argument in application start
         monkeypatch.setattr(client.bot, 'get_response', wait_response)
         t = Thread(target=client.start, daemon=True)
         t.start()
@@ -139,6 +176,8 @@ class TestMultibotClient(object):
         """
         Raising an AttributeError should not always be captured.
         """
+
+        # Patch the get_response function to cause an AttributeError
         mocker.patch.object(
             client.bot.get_response, side_effect=AttributeError)
         with pytest.raises(AttributeError):

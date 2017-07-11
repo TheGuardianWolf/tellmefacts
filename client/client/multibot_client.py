@@ -120,6 +120,6 @@ class MultibotClient(object):
         self.events.get('close').set()
         try:
             self.bot.input.close()
-            self.bot.storage.drop()
         except AttributeError:
             pass
+        self.bot.storage.drop()

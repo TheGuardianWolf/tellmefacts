@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 from client import MultibotClient
 from random import randint
@@ -9,6 +10,7 @@ from multiprocessing.pool import ThreadPool
 from threading import Thread
 
 
+# Set global config values for the integration test
 TEST_CONFIG_PATH = path.join(path.dirname(path.realpath(__file__)), 'config')
 BOT_ID = 'fakebotid'
 USER_ID = 'fakeid'
@@ -20,14 +22,20 @@ DUMMYBOTS = {
 
 
 def check_dummybots():
+    """
+    Checks the availablity of dummybots and set the global flag. Runs once per
+    test session.
+    """
     global DUMMYBOTS
     if not DUMMYBOTS['tested']:
         DUMMYBOTS['tested'] = True
 
+        # Load bot configuration
         fp = open(path.join(TEST_CONFIG_PATH, 'bots.json'), 'r')
         bot_connections = loads(fp.read())
         fp.close()
 
+        # Check the connection to dummybots concurrently
         def worker(bot_url):
             try:
                 r = head('{}/askmeanything?q=test'.format(bot_url), timeout=5)
@@ -43,6 +51,7 @@ def check_dummybots():
         pool = ThreadPool(processes=3)
         bot_available = pool.map(worker, urls)
 
+        # Check the results of the connection tests and update flags
         for i, available in enumerate(bot_available):
             if available is None:
                 DUMMYBOTS['available'] = False
@@ -52,11 +61,17 @@ def check_dummybots():
 
 @pytest.fixture(params=[True, False], ids=['patch_ask', 'no_patch_ask'])
 def patch_bot_ask(request, mocker):
+    """
+    Patches for the bot ask method to either send real requests or generate a
+    mock response for testing. If connection tests to bots fail, mark tests
+    that use the real requests as xfail.
+    """
     if request.param:
         mocker.patch(
             'client.services.BotConnection.ask',
             return_value=(200, 'response'))
     else:
+        # Require a flag to run the dummybot live tests
         if not pytest.config.getoption('--dummybot'):
             pytest.skip('need --dummybot option to run')
         else:
@@ -67,6 +82,10 @@ def patch_bot_ask(request, mocker):
 
 @pytest.fixture()
 def client(mocker, monkeypatch, patch_bot_ask):
+    """
+    Create and patches for the multibot client.
+    """
+    # Create a combined api response object for user id and bot id
     mock_api_call = {
         'ok': True,
         'user_id': USER_ID,
@@ -76,6 +95,8 @@ def client(mocker, monkeypatch, patch_bot_ask):
             }
         }
     }
+
+    # Patch the slackclient to not do real requests to Slack
     m_api = mocker.patch(
         'client.multibot_client.SlackClient.api_call',
         return_value=mock_api_call)
@@ -86,9 +107,18 @@ def client(mocker, monkeypatch, patch_bot_ask):
         'client.multibot_client.SlackClient.rtm_read',
         return_value=events_input)
     m_rtm_s = mocker.patch('slackclient.SlackClient.rtm_send_message')
+
+    # Create the multibot client with the config path set to the integration
+    # test config folder
     c = MultibotClient(config_path=TEST_CONFIG_PATH)
+
+    # Enable websockets
     monkeypatch.setattr(c.slack_client.server, 'websocket', True)
-    t = Thread(target=c.start, args=())
+
+    # Run the client on a seperate thread
+    t = Thread(target=c.start, args=(), daemon=True)
+
+    # Return all patch objects for checking
     return_object = {
         'client': c,
         'events_input': events_input,
@@ -99,12 +129,18 @@ def client(mocker, monkeypatch, patch_bot_ask):
     }
     t.start()
     yield return_object
+
+    # Cleanup and end thread
     c.close()
     t.join(timeout=5)
 
 
 class TestClientIntegration(object):
     def query_bot(self, client, query):
+        """
+        Ask the currently set bot a question. Checks that the outputs and
+        function calls are as expected.
+        """
         read_count = client.get('rtm_read').call_count
         send_count = client.get('rtm_send_message').call_count
         client.get('events_input').append({
@@ -134,6 +170,9 @@ class TestClientIntegration(object):
         return str(randint(start, end))
 
     def test_simple_chat(self, client):
+        """
+        Test whether a simple chat to one bot goes as expected.
+        """
         assert self.query_bot(client, 'list') == ('1. Interesting Facts\n'
                                                   '2. Strange Facts\n'
                                                   '3. Unusual Facts')
@@ -148,10 +187,15 @@ class TestClientIntegration(object):
             'end_session') == 'Chat session with Interesting Facts ended.'
 
     def test_multibot_chat(self, client):
+        """
+        Test whether a chat switching between multiple bots goes as expected.
+        """
         assert self.query_bot(client, 'list'), ('1. Interesting Facts\n'
                                                 '2. Strange Facts\n'
                                                 '3. Unusual Facts')
 
+        # Test connecting to, chatting with, and disconnecting from all bot
+        # connections
         for i, connection in enumerate(client.get('client').bot_connections):
             assert self.query_bot(client, 'start_session {}'.format(
                 connection['name'])) == 'You are now chatting with {}.'.format(
@@ -163,14 +207,22 @@ class TestClientIntegration(object):
                     connection['name'])
 
     def test_invalid_chat(self, client):
+        """
+        Test whether a chat with invalid commands being sent goes as expected.
+        """
+        # Try to chat when not connected to a bot
         rand = self.random_string()
         assert self.query_bot(client, rand) == (
             'You are currently not connected to any bot. '
             'Connect to a bot with \'start_session <bot_name>\' or '
             'type \'list\' for a list of available bots.')
+
+        # Try to end the session without being in a session
         assert self.query_bot(
             client,
             'end_session') == 'You are currently not in an active session.'
+
+        # Try to start a new session whilst a session is currently in place
         assert self.query_bot(client, 'start_session Unusual Facts'
                               ) == 'You are now chatting with Unusual Facts.'
         assert self.query_bot(

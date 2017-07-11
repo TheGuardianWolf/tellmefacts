@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from cherrypy.test import helper
 from json import loads
 from dummybot import Server
@@ -21,9 +22,9 @@ class DummybotTests(helper.CPWebCase):
         self.assertStatus('200 OK')
         self.assertHeader('Content-Type', 'application/json')
         deserialisedBody = loads(self.body)
-        self.assertIsInstance(deserialisedBody, dict)
-        self.assertIn('response', deserialisedBody)
-        self.assertEqual(deserialisedBody['response'], '#1 test')
+        assert isinstance(deserialisedBody, dict)
+        assert 'response' in deserialisedBody
+        assert deserialisedBody['response'] == '#1 test'
 
     def test_ask_random(self):
         params = urlencode({'q': 'Hello world'})

@@ -34,16 +34,16 @@ class KeywordCommand(Keyword):
     are intended to modify operation of the bot in some way.
     """
 
-    command_regexp = compile('^([^ ]+) ?(.*)$')  # Command regex template
+    command_regexp = compile('^([^ ]+) ?(.*)$')  # Command regex pattern
 
     @classmethod
     def match(self, test):
         """
-        Check if a test string matches the command template
+        Check if a test string matches the command pattern
 
         :param test: A text string to test.
 
-        :returns: Return value of a regex match with the command template.
+        :returns: Return value of a regex match with the command pattern.
         """
         return self.command_regexp.match(test)
 
