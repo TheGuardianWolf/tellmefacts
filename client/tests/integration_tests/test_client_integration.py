@@ -181,7 +181,7 @@ class TestClientIntegration(object):
         ) == 'You are now chatting with Interesting Facts.'
 
         assert self.query_bot(
-            client, self.random_string()) == 'Interesting Facts: response'
+            client, 'Ṱ̺̺̕h̼͓̲̦̳̘̲e͇̣̰̦̬͎ ̢̼̻̱̘h͚͎͙̜̣̲ͅi̦̲̣̰̤v̻͍e̺̭̳̪̰-m̢iͅn̖̺̞̲̯̰d̵̼̟͙̩̼̘̳.̨̹͈̣') == 'Interesting Facts: response'
         assert self.query_bot(
             client,
             'end_session') == 'Chat session with Interesting Facts ended.'
