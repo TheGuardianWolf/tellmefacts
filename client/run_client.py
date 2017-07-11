@@ -62,9 +62,8 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.INFO)
 
-    if not args.only_tests:
-        c = MultibotClient(**client_args)
-        c.start()
+    c = MultibotClient(**client_args)
+    c.start()
 
 
 if __name__ == '__main__':

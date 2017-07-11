@@ -144,7 +144,7 @@ class MultibotRelayAdapter(LogicAdapter):
         else:
             return 'You are already in a chat session with {}!'.format(
                 self.state.bot.name)
-        
+
         # Nothing found with that name
         return ('Sorry, no bot with that name was found. Type \'list\' to '
                 'see available bots.')

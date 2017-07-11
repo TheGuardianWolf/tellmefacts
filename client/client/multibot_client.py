@@ -7,6 +7,7 @@ from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
 from client.services import EventManager
 from slackclient._slackrequest import SlackRequest
+from sys import exit
 
 
 class MultibotClient(object):
@@ -80,7 +81,13 @@ class MultibotClient(object):
 
         :param api_hostname: A valid hostname (e.g. slack.com).
         """
-        slack_client_do = SlackRequest.do
+        try:
+            # See if there's a stored version of the orignal method
+            slack_client_do = self.__slack_client_do
+        except AttributeError:
+            # Store unpatched method
+            self.__slack_client_do = SlackRequest.do
+            slack_client_do = SlackRequest.do
 
         def patched_do(obj,
                        token,
@@ -102,15 +109,10 @@ class MultibotClient(object):
             while not self.events.get('close').is_set():
                 try:
                     self.bot.get_response(None)
-                except AttributeError as e:
-                    # When close event is set, None is returned and causes an
-                    # exception that needs to be caught
-                    if not str(
-                            e
-                    ) == '\'NoneType\' object has no attribute \'text\'':
-                        raise e
+                except StopIteration:
+                    pass
         # Press ctrl-c or on the keyboard to exit
-        except (KeyboardInterrupt, EOFError, SystemExit):
+        except (KeyboardInterrupt, SystemExit):
             self.close()
 
     def close(self):

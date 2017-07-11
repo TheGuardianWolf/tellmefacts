@@ -55,13 +55,12 @@ class Slack(InputAdapter):
         """
         self.logger.info('attempting to find user ID from Slack')
         api_call = self.slack_client.api_call('auth.test')
-        if api_call.get('ok') and 'user_id' in api_call:
-            user_id = api_call.get('user_id')
+        if api_call['ok'] and 'user_id' in api_call:
+            user_id = api_call['user_id']
             self.logger.info('user ID recognised as \'{}\''.format(user_id))
             return user_id
         else:
-            raise LookupError(
-                'Could not find bot user id \'{}\'.'.format(self.bot_name))
+            raise ValueError('Slack API gave an unexpected response.')
 
     def get_bot_id(self):
         """
@@ -70,13 +69,12 @@ class Slack(InputAdapter):
         """
         self.logger.info('attempting to find bot ID from Slack')
         api_call = self.slack_client.api_call('users.info', user=self.user_id)
-        if api_call.get('ok') and 'user' in api_call:
-            bot_id = api_call.get('user').get('profile').get('bot_id')
+        if api_call['ok'] and 'user' in api_call:
+            bot_id = api_call['user']['profile']['bot_id']
             self.logger.info('bot ID recognised as \'{}\''.format(bot_id))
             return bot_id
         else:
-            raise LookupError(
-                'Could not find bot id \'{}\'.'.format(self.bot_name))
+            raise ValueError('Slack API gave an unexpected response.')
 
     def start(self):
         """
@@ -98,8 +96,12 @@ class Slack(InputAdapter):
         """
         self.events.get('input_close').set()
         self.logger.info('Slack RTM: waiting for shutdown')
-        self.event_thread.join(timeout=5)
-        self.logger.info('Slack RTM: shutdown successful')
+        try:
+            self.event_thread.join(timeout=5)
+        except AttributeError:
+            self.logger.info('Slack RTM: event loop was not started')
+        else:
+            self.logger.info('Slack RTM: shutdown successful')
 
     def event_loop(self, polling_rate=0.2):
         """
@@ -130,20 +132,28 @@ class Slack(InputAdapter):
 
     def process_input(self, statement):
         """
-        Returns a statement object based on the input source.
+        Returns a statement object based on the input source. When the
+        input_close event is set with this loop running, an exception will be
+        raised to prevent chatterbot from storing and processing blank data,
+        which must be caught.
+
+        :param statment: Input is ignored.
+
+        :returns: A message from a Slack user that mentions the bot.
+        :rtype: Statement
         """
         data = False
         while not data:
             if (self.events.get('input_close').is_set()):
                 # Exit path if close event is set
-                return None
+                raise StopIteration
 
             # Below loop runs until an event is available
             event = False
             while not event:
                 if (self.events.get('input_close').is_set()):
                     # Exit path if close event is set
-                    return None
+                    raise StopIteration
 
                 # Read from the message event data queue, timeout per second
                 # so application doesn't hang with no message
@@ -164,7 +174,8 @@ class Slack(InputAdapter):
                                      format(data['matched_text']))
             else:
                 self.logger.info('discarding message from self')
-
+        
+        # This part should not be reached without valid data
         self.events.get('message').clear()
         statement = Statement(data['matched_text'], extra_data=data)
         self.logger.info('processing user statement {}'.format(statement))

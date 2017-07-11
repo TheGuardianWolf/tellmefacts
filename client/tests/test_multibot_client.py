@@ -34,11 +34,13 @@ def client(tmpdir, mocker):
     mocker.patch(
         'client.services.BotConnection.ask', return_value=(200, 'response'))
 
-    # Create client with simple adapters to read from and write to
+    # Create client with simple adapters to read from and write to. Slack
+    # requests module starts off patched.
     c = MultibotClient(
         config_path=tmpdir,
         input_adapter='chatterbot.input.VariableInputTypeAdapter',
-        output_adapter='chatterbot.output.OutputAdapter')
+        output_adapter='chatterbot.output.OutputAdapter',
+        api_hostname='localhost')
     yield c
 
     # Cleanup with the close function
@@ -67,24 +69,36 @@ class TestMultibotClient(object):
         m_post = mocker.patch(
             'slackclient._slackrequest.requests.post',
             return_value=mocker.Mock(text='{"ok":true}'))
-        client.patch_slack_requests('localhost')
 
-        # Send a message via slack api call
+        # Function to check the post request parameters are as expected
+        def check_slack_request(hostname):
+            assert m_post.called
+            args, kwargs = m_post.call_args
+            assert args[0] == 'https://{0}/api/{1}'.format(hostname,
+                                                           'chat.postMessage')
+            assert 'user-agent' in kwargs.get('headers')
+            assert kwargs.get('data').get('channel') == '#general'
+            assert kwargs.get('data').get('text') == 'test'
+            assert kwargs.get('data').get(
+                'token') == 'xoxp-1234123412341234-12341234-1234'
+            assert kwargs.get('files') is None
+            assert kwargs.get('timeout') is None
+            assert kwargs.get('proxies') is None
+
+        # Send a message via slack api call (slackclient's request class was
+        # patched in fixture)
         sc = SlackClient('xoxp-1234123412341234-12341234-1234')
         sc.api_call('chat.postMessage', text='test', channel='#general')
 
-        # Check the post request parameters are as expected
-        assert m_post.called
-        args, kwargs = m_post.call_args
-        assert args[0] == 'https://{0}/api/{1}'.format(
-            'localhost', 'chat.postMessage')
-        assert 'user-agent' in kwargs.get('headers')
-        assert kwargs.get('data').get('channel') == '#general'
-        assert kwargs.get('data').get('text') == 'test'
-        assert kwargs.get('data').get('token') == 'xoxp-1234123412341234-12341234-1234'
-        assert kwargs.get('files') is None
-        assert kwargs.get('timeout') is None
-        assert kwargs.get('proxies') is None
+        # Check now
+        check_slack_request('localhost')
+
+        # Try patch to another hostname
+        client.patch_slack_requests('localhost:8080')
+        sc.api_call('chat.postMessage', text='test', channel='#general')
+
+        # Check again
+        check_slack_request('localhost:8080')
 
     def test_simple_chat(self, client, mocker):
         """
@@ -175,13 +189,13 @@ class TestMultibotClient(object):
         t.join(timeout=3)
         assert not t.is_alive()
 
-    def test_client_assertion_error(self, client, mocker):
-        """
-        Raising an AttributeError should not always be captured.
-        """
+    # def test_client_stopiteration_error(self, client, mocker):
+    #     """
+    #     Raising an AttributeError should not always be captured.
+    #     """
 
-        # Patch the get_response function to cause an AttributeError
-        mocker.patch.object(
-            client.bot, 'get_response', side_effect=AttributeError)
-        with pytest.raises(AttributeError):
-            client.start()
+    #     # Patch the get_response function to cause an AttributeError
+    #     mocker.patch.object(
+    #         client.bot, 'get_response', side_effect=AttributeError)
+    #     with pytest.raises(AttributeError):
+    #         client.start()
