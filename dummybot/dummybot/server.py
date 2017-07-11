@@ -1,5 +1,6 @@
 import cherrypy
 import sys
+from unittest.mock import MagicMock
 from inspect import getfile
 from warnings import warn
 from json import loads, JSONDecodeError
@@ -60,7 +61,6 @@ class Server(object):
     def __setup(self):
         random_response = RandomResponse(self.responses)
         cherrypy.tree.mount(None, '/', config=self.route_config)
-        cherrypy.tree.mount(lambda x: '0', '/test', config=self.route_config)
         cherrypy.tree.mount(
             random_response, '/askmeanything', config=self.route_config)
 
