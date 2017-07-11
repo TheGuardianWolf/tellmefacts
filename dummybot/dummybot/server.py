@@ -1,6 +1,5 @@
 import cherrypy
 import sys
-from unittest.mock import MagicMock
 from inspect import getfile
 from warnings import warn
 from json import loads, JSONDecodeError
