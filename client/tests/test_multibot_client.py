@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 from chatterbot.conversation import Statement
+from slackclient import SlackClient
 from client import MultibotClient
 from random import randint
 from json import dumps
@@ -65,20 +66,22 @@ class TestMultibotClient(object):
         # Patch required objects for requests
         m_post = mocker.patch(
             'slackclient._slackrequest.requests.post',
-            autospec=True,
             return_value=mocker.Mock(text='{"ok":true}'))
         client.patch_slack_requests('localhost')
 
         # Send a message via slack api call
-        client.bot.output.send_message(Statement('test'), '#general')
+        sc = SlackClient('xoxp-1234123412341234-12341234-1234')
+        sc.api_call('chat.postMessage', text='test', channel='#general')
 
         # Check the post request parameters are as expected
         assert m_post.called
         args, kwargs = m_post.call_args
-        assert kwargs.get('url') == 'https://{0}/api/{1}'.format(
+        assert args[0] == 'https://{0}/api/{1}'.format(
             'localhost', 'chat.postMessage')
         assert 'user-agent' in kwargs.get('headers')
-        assert kwargs.get('data') is None
+        assert kwargs.get('data').get('channel') == '#general'
+        assert kwargs.get('data').get('text') == 'test'
+        assert kwargs.get('data').get('token') == 'xoxp-1234123412341234-12341234-1234'
         assert kwargs.get('files') is None
         assert kwargs.get('timeout') is None
         assert kwargs.get('proxies') is None
@@ -149,7 +152,7 @@ class TestMultibotClient(object):
         Test ending application with a keyboard interrupt.
         """
         mocker.patch.object(
-            client.bot.get_response, side_effect=KeyboardInterrupt)
+            client.bot, 'get_response', side_effect=KeyboardInterrupt)
         t = Thread(target=client.start, daemon=True)
         t.start()
         t.join(timeout=3)
@@ -168,7 +171,7 @@ class TestMultibotClient(object):
         monkeypatch.setattr(client.bot, 'get_response', wait_response)
         t = Thread(target=client.start, daemon=True)
         t.start()
-        client.stop()
+        client.close()
         t.join(timeout=3)
         assert not t.is_alive()
 
@@ -179,6 +182,6 @@ class TestMultibotClient(object):
 
         # Patch the get_response function to cause an AttributeError
         mocker.patch.object(
-            client.bot.get_response, side_effect=AttributeError)
+            client.bot, 'get_response', side_effect=AttributeError)
         with pytest.raises(AttributeError):
             client.start()
