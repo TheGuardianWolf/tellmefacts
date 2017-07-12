@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
-#
-# ChatterBot documentation build configuration file, created by
-# sphinx-quickstart on Mon May  9 14:38:54 2016.
 
 import sys
 import os
 import sphinx_rtd_theme
 from datetime import datetime
 
-import client
-
-
 # Insert the project root dir as the first element in the PYTHONPATH.
 # This lets us ensure that the source package is imported, and that its version is used.
 current_directory = os.path.dirname(os.path.abspath(__file__))
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 sys.path.insert(0, parent_directory)
+
+import client
 
 # -- General configuration ------------------------------------------------
 
@@ -26,7 +22,6 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode'
 ]
@@ -46,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project
 project = 'tellmefacts-client'
-copyright = '{}, {}'.format(datetime.now().year, client.__author__)
+copyright = '{} {}. Licenced under the MIT Licence'.format(datetime.now().year, client.__author__)
 author = client.__author__
 
 # The short X.Y version

@@ -5,6 +5,8 @@ Input Adapters
 The tellmefacts-client provides one additional input adapter to provide a
 connection to the Slack API.
 
+.. _slack-input-adapter:
+
 Slack input adapter
 ===========================
 
@@ -28,7 +30,7 @@ will need to be invited into channels by a team admin. The adapter will
 ignore self mentions if such a message ever occurs, but will not ignore other
 bots.
 
-Event manager
+Input event manager
 ---------------------------
 
 The input class automatically creates an :code:`EventManager` object if a shared
@@ -36,7 +38,7 @@ instance is not provided. These events are required to control the closing of
 the RTM read thread. It is recommended that a shared :code:`EventManager` be
 used across a multibot client.
 
-Usage
+Slack input adapter usage
 ---------------------------
 
 The :code:`SlackClient` class seen below is found in the `slackclient`_ package.

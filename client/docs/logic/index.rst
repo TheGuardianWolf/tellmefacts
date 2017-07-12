@@ -5,8 +5,8 @@ Logic Adapters
 The tellmefacts-client provides one additional logic adapter to provide the
 framework required to process keyword commands and multiplex bot connections.
 
-Multibot Relay Adapter
-==================
+Multibot relay adapter
+======================
 
 .. autofunction:: client.logic.MultibotRelayAdapter
 
@@ -14,8 +14,8 @@ The :code:`MultibotRelayAdapter` multiplexes chat conversations between multiple
 supported bots. Chat strings are also compared with known keywords to provide
 user commands list and to switch between available bots.
 
-How it works
-------------
+Relay adapter processing
+------------------------
 
 The input statement is checked to see whether it is in the format of a keyword
 command. If a match is found, the keyword is checked against known keywords
@@ -26,7 +26,7 @@ Otherwise, the statement is treated as a chat message and relayed to the
 currently selected bot if an active session exists.
 
 Command methods
-------------
+---------------
 
 Handler methods are registered on initialisation of the adapter, and called if
 the matching keyword is given as an input statement with appropriate arguments.

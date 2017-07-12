@@ -5,6 +5,8 @@ Output Adapters
 The tellmefacts-client provides one additional output adapter to provide a
 connection to the Slack API.
 
+.. _slack-output-adapter:
+
 Slack output adapter
 =====================
 
@@ -40,8 +42,8 @@ It is recommended that a shared :code:`EventManager` object and
 adapter is also a Slack adapter; to take advantage of a unified event management
 object and enable the use of *RTM* to send messages.
 
-Usage
----------------------
+Slack output adapter usage
+--------------------------
 
 The :code:`SlackClient` class seen below is found in the `slackclient`_ package.
 

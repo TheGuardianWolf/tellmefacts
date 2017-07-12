@@ -1,6 +1,6 @@
 # tellmefacts Slack Bot Client
 
-The tellmefacts client was created to multiplex chat conversations to multiple
+The tellmefacts client was created to multiplex chat conversations between multiple
 fact bots that use a supported API. Slack users are able to pick between
 configured bots by issuing commands to the bot, and subsequently chat with a
 connected bot. Essentially, the client acts as a relay client to connected bots.
@@ -62,7 +62,7 @@ session.
 
 Usage: `@tellmefacts end_session`
 
-Ends a current bot session. If not in an active session, an error is produced.
+Ends the current bot session. If not in an active session, an error is produced.
 
 ## Launcher
 
@@ -87,8 +87,6 @@ launch the application. Several command line options are built in as follows:
     --terminal            set bot to run in terminal mode
     --verbose             display all logging information on terminal
 ```
-
-These launcher options are useful for debugging the application.
 
 ## Configuration
 
@@ -146,10 +144,10 @@ configuration. The config folder is located at `tests/integration_tests/config`
 and should contain a `bots.json` file along with a `slack_api.json` file.
 
 When the configuration is ready, start the tests with an additional `--dummybot`
-flag. The servers will be sent HEAD requests to verify that they are actually 
+flag. The servers will be sent HTTP HEAD requests to verify that they are actually 
 online, before tests begin.
 
-Is is recommended to use the [dummybot](https://github.com/TheGuardianWolf/tellmefacts/tree/master/dummybot) server 
+It is recommended to use the [dummybot](https://github.com/TheGuardianWolf/tellmefacts/tree/master/dummybot) server 
 included in this project for these tests.
 
 ## Documentation

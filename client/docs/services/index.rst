@@ -8,7 +8,7 @@ and to promote seperation of concerns within the client classes.
 Most service classes provided in this module are collections of data objects.
 
 Bot Connection Manager
-==================
+======================
 
 The :code:`BotConnectionManager` class is a collection of :code:`BotConnection`
 objects. These represent supported bots that the client are able to connect to.

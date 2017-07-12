@@ -15,7 +15,7 @@ class DataEvent(Event):
 
 class EventManager(object):
     """
-    A collection class for `DataEvent`s.
+    A collection class for DataEvents.
     """
     def __init__(self, event_types):
         self.events = {}

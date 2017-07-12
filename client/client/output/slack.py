@@ -8,8 +8,7 @@ class Slack(OutputAdapter):
     An input adapter that allows a ChatterBot instance to send responses via a
     Slack Bot User using *Slack API*. The adapter sends to the channel the last
     input statement was sent from, or to a default channel if the input is not
-    from a Slack input adapter.
-    https://api.slack.com
+    from a Slack input adapter. See: https://api.slack.com
     """
 
     def __init__(self, **kwargs):

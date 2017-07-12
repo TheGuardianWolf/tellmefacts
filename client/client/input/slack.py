@@ -13,8 +13,7 @@ class Slack(InputAdapter):
     An input adapter that allows a ChatterBot instance to get input statements
     from a Slack Bot User using *Slack API*. The slack bot only responds if it
     is present in the channel the user is in, and must be mentioned with the
-    bot name passed as an argument to this adapter.
-    https://api.slack.com
+    bot name passed as an argument to this adapter. See: https://api.slack.com
     """
 
     def __init__(self, **kwargs):

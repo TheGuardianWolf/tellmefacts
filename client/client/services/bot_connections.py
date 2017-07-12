@@ -34,7 +34,7 @@ class BotConnection(object):
 
 class BotConnectionManager(object):
     """
-    A collection class for `BotConnection`s.
+    A collection class for BotConnections.
     """
 
     def __init__(self, connection_list):

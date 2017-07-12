@@ -1,8 +1,8 @@
-================
+============================
 tellmefacts Slack Bot Client
-================
+============================
 
-The tellmefacts client was created to multiplex chat conversations to multiple
+The tellmefacts client was created to multiplex chat conversations between multiple
 fact bots that use a supported API. Slack users are able to pick between
 configured bots by issuing commands to the bot, and subsequently chat with a
 connected bot. Essentially, the client acts as a relay client to connected bots.
@@ -44,7 +44,7 @@ These adapters are suitable for use in any other chatterbot project as they
 inherit from the base chatterbot adapter classes.
 
 Client keyword commands
-====================
+=======================
 
 The client accepts the following commands:
 
@@ -67,7 +67,7 @@ session.
 
 Usage: :code:`@tellmefacts end_session`
 
-Ends a current bot session. If not in an active session, an error is produced.
+Ends the current bot session. If not in an active session, an error is produced.
 
 Launcher
 ====================
@@ -94,8 +94,6 @@ launch the application. Several command line options are built in as follows:
     --terminal            set bot to run in terminal mode
     --verbose             display all logging information on terminal
 
-These launcher options are useful for debugging the application.
-
 Configuration
 ====================
 
@@ -108,6 +106,7 @@ The following config files are needed to run this client:
 **bots.json** - configures bot urls and names.
 
 .. code-block:: json
+
     [
         {
             "name": "Interesting Facts",
@@ -126,6 +125,7 @@ The following config files are needed to run this client:
 **slack_api.json** - configures the client's bot tokens and bot name.
 
 .. code-block:: json
+
     {
         "bot_name": "tellmefacts",
         "bot_user_token": "xoxp-1234123412341234-12341234-1234"
@@ -139,6 +139,7 @@ features. The easiest way to run tests is to open a shell at the app directory
 and run:
 
 .. code-block:: bash
+
     # Linux
     python3 -m pytest tests
 
@@ -152,10 +153,10 @@ and should contain a :code:`bots.json` file along with a :code:`slack_api.json`
 file.
 
 When the configuration is ready, start the tests with an additional 
-:code:`--dummybot` flag. The servers will be sent HEAD requests to verify that
+:code:`--dummybot` flag. The servers will be sent HTTP HEAD requests to verify that
 they are actually online, before tests begin.
 
-Is is recommended to use the `dummybot`_ server included in this project for
+It is recommended to use the `dummybot`_ server included in this project for
 these tests.
 
 Documentation
@@ -164,6 +165,7 @@ Documentation
 Documentation uses `Sphinx`_. This can be compiled from the source code using:
 
 .. code-block:: bash
+
     sphinx-build -b html docs/ build/
 
 .. note::
@@ -181,7 +183,6 @@ Contents:
    output/index
    services/index
    multibot_client
-   commands
 
 Report an issue
 ===============

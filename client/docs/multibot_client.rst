@@ -1,6 +1,6 @@
-==========
+==============
 MultibotClient
-==========
+==============
 
 This class creates and configures objects required for the bot to function.
 Configuration is loaded from files from the config folder during initialisation.
@@ -54,7 +54,7 @@ has a verbose switch to enable logging.
    logging.basicConfig(level=logging.INFO)
 
 Hostname patching
-==============
+=================
 
 The :code:`MultibotClient` class is able to patch the slackclient's requests to
 be sent to another hostname. This can be used to debug the application by

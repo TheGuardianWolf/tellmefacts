@@ -27,7 +27,7 @@ class Keyword(object):
 
 class KeywordManager(object):
     """
-    A collection class for `Keyword`s.
+    A collection class for Keywords.
     """
 
     def __init__(self, keywords_list):
