@@ -1,5 +1,4 @@
-tellmefacts Slack Bot Client
-================
+# tellmefacts Slack Bot Client
 
 The tellmefacts bot was created to multiplex chat conversations to multiple
 fact bots that use a supported API. Slack users are able to pick between
@@ -24,8 +23,7 @@ An example of typical conversation would look like this:
    bot:  Chat session with Strange Facts ended.
 ```
 
-How it works
-====================
+## How it works
 
 The Slack bot was built with the python [ChatterBot](https://github.com/gunthercox/ChatterBot)chatbot framework for processing chat messages. Custom input, output, and logic
 adapters were built to interact with chat messages from the Slack RTM API, using 
@@ -41,8 +39,7 @@ Web API.
 These adapters are suitable for use in any other chatterbot project as they
 inherit from the base chatterbot adapter classes.
 
-Bot keyword commands
-====================
+## Bot keyword commands
 
 The bot accepts the following commands:
 
@@ -67,8 +64,7 @@ Usage: `@tellmefacts end_session`
 
 Ends a current bot session. If not in an active session, an error is produced.
 
-Launcher
-====================
+## Launcher
 
 A launcher script is provided as `run_client.py` that can be used to
 launch the application. Several command line options are built in as follows:
@@ -94,8 +90,7 @@ launch the application. Several command line options are built in as follows:
 
 These launcher options are useful for debugging the application.
 
-Configuration
-====================
+## Configuration
 
 Configuration of Slack tokens and bot connections are done externally in a
 config folder. By default this is located in the bot's directory under the
@@ -131,8 +126,7 @@ The following config files are needed to run this bot:
     }
 ```
 
-Running tests
-====================
+## Running tests
 
 Tests for the bot are written in pytest and use pytest-cov and pytest-mock
 features. The easiest way to run tests is to open a shell at the app directory
@@ -146,18 +140,28 @@ and run:
     py -3 -m pytest tests
 ```
 
-Documentation
-====================
+The client integration tests contain three test cases that will be skipped by
+default. These test cases make real requests to a bot server, and require
+configuration. The config folder is located at `tests/integration_tests/config`
+and should contain a `bots.json` file along with a `slack_api.json` file.
 
-Documentation is written in [Sphinx](http://www.sphinx-doc.org). This can be
-compiled from the source code using:
+When the configuration is ready, start the tests with an additional `--dummybot`
+flag. The servers will be sent HEAD requests to verify that they are actually 
+online, before tests begin.
+
+Is is recommended to use the [dummybot](https://github.com/TheGuardianWolf/tellmefacts/tree/master/dummybot) server 
+included in this project for these tests.
+
+## Documentation
+
+Documentation uses [Sphinx](http://www.sphinx-doc.org). This can be compiled
+from the source code using:
 
 ```bash
     sphinx-build -b html docs/ build/
 ```
 
-Report an issue
-===============
+## Report an issue
 
 Please direct all bug reports and feature requests to the project's issue
 tracker on [GitHub](https://github.com/TheGuardianWolf/tellmefacts/issues/).

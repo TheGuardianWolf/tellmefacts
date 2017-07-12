@@ -1,3 +1,4 @@
+================
 tellmefacts Slack Bot Client
 ================
 
@@ -144,11 +145,23 @@ and run:
     # Windows
     py -3 -m pytest tests
 
+The client integration tests contain three test cases that will be skipped by
+default. These test cases make real requests to a bot server, and require
+configuration. The config folder is located at :code:`tests/integration_tests/config`
+and should contain a :code:`bots.json` file along with a :code:`slack_api.json`
+file.
+
+When the configuration is ready, start the tests with an additional 
+:code:`--dummybot` flag. The servers will be sent HEAD requests to verify that
+they are actually online, before tests begin.
+
+Is is recommended to use the `dummybot`_ server included in this project for
+these tests.
+
 Documentation
 ====================
 
-Documentation is written in `Sphinx`_. This can be compiled from the source code
-using:
+Documentation uses `Sphinx`_. This can be compiled from the source code using:
 
 .. code-block:: bash
     sphinx-build -b html docs/ build/
@@ -176,3 +189,4 @@ tracker on `GitHub`_.
 .. _Sphinx: http://www.sphinx-doc.org
 .. _ChatterBot: https://github.com/gunthercox/ChatterBot
 .. _python-slackclient: https://github.com/slackapi/python-slackclient
+.. _dummybot: https://github.com/TheGuardianWolf/tellmefacts/tree/master/dummybot
