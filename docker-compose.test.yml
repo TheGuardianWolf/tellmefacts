@@ -1,29 +1,18 @@
 version: '3'
 services:
-    # tester:
-    #     build: client
-    #     command: python client/run_client.py
-    #     # command: /bin/sh
-    #     volumes:
-    #         - '.:/tester'
-    #     links:
-    #         - dummybot
-    #     stdin_open: true
-    #     tty: true
     client:
         build: client
-        command: python client/run_client.py --only-tests
-        # command: /bin/sh
-        volumes:
-            - '.:/client'
+        command: python3 -m pytest tests --dummybot
         links:
             - dummybot
         stdin_open: true
         tty: true
+        volumes: 
+            - './client:/client' 
     dummybot:
         build: dummybot
-        command: python dummybot/run_dummybot.py --with-tests
+        command: python3 run_dummybot.py
         ports:
             - '80'
-        volumes:
-            - '.:/dummybot'
+        volumes: 
+            - './dummybot:/dummybot' 

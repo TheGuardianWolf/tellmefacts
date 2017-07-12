@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 from cherrypy.test import helper
 from json import loads
 from dummybot import Server
@@ -6,9 +7,19 @@ from tempfile import TemporaryDirectory
 from json import dumps
 from os import path
 from urllib.parse import urlencode
+from threading import Thread
+from time import sleep
 
 
-class DummybotTests(helper.CPWebCase):
+class TestServer(object):
+    def test_empty_config(self, tmpdir):
+        with pytest.warns(Warning):
+            s = Server(config_path=tmpdir)
+        assert isinstance(s.responses, list)
+        assert len(s.responses) == 3
+
+
+class TestServerCPTest(helper.CPWebCase):
     @classmethod
     def setup_server(self):
         temp_dir = TemporaryDirectory()
