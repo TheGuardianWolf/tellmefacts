@@ -54,7 +54,7 @@ been followed from the client [README](https://github.com/TheGuardianWolf/tellme
 Then run the following command in a shell from the project root to get started:
 
 ```bash
-docker-compose up --scale dummybot=3
+docker-compose --scale dummybot=3
 ```
 
 That's it!
@@ -67,9 +67,7 @@ container building (more details in the client README). To run them fully, the `
 Use the following command to start the tests:
 
 ```bash
-docker-compose up --file docker-compose.test.yml --scale dummybot=3
+docker-compose --file docker-compose.test.yml --scale dummybot=3
 ```
 
-NOTE: The dummybot services will need to be manually closed after testing with `CTRL-C`.
-
-ADDITIONAL NOTE: Looks like Linux's docker-compose command might not accept the --file argument, so the docker-compose.test.yml may need to be renamed temporarily to docker-compose.yml for it to run.
+The dummybot services will need to be manually closed after testing with `CTRL-C`.
