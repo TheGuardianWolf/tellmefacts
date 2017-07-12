@@ -181,8 +181,9 @@ class TestClientIntegration(object):
             client, 'start_session Interesting Facts'
         ) == 'You are now chatting with Interesting Facts.'
 
+        # Try a unicode query this time
         assert self.query_bot(
-            client, 'Ṱ̺̺̕h̼͓̲̦̳̘̲e͇̣̰̦̬͎ ̢̼̻̱̘h͚͎͙̜̣̲ͅi̦̲̣̰̤v̻͍e̺̭̳̪̰-m̢iͅn̖̺̞̲̯̰d̵̼̟͙̩̼̘̳.̨̹͈̣') == 'Interesting Facts: response'
+            client, 'Ṱ̺̺̕h̼͓̲̦̳̘̲e͇̣̰̦̬͎ ̢̼̻̱̘h͚͎͙̜̣̲ͅi̦̲̣̰̤v̻͍e̺̭̳̪̰-m̢iͅn̖̺̞̲̯̰d̵̼̟͙̩̼̘̳.̨̹͈̣').find('Interesting Facts') == 0
         assert self.query_bot(
             client,
             'end_session') == 'Chat session with Interesting Facts ended.'
