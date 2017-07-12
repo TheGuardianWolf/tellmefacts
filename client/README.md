@@ -161,6 +161,9 @@ from the source code using:
     sphinx-build -b html docs/ build/
 ```
 
+NOTE: The `sphinx` and `sphinx_rtd_theme` packages must be installed on the
+machine building the docs.
+
 ## Report an issue
 
 Please direct all bug reports and feature requests to the project's issue

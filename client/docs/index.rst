@@ -166,6 +166,10 @@ Documentation uses `Sphinx`_. This can be compiled from the source code using:
 .. code-block:: bash
     sphinx-build -b html docs/ build/
 
+.. note::
+    The :code:`sphinx` and :code:`sphinx_rtd_theme` packages must be installed
+    on the machine building the docs.
+
 Contents:
 =========
 
