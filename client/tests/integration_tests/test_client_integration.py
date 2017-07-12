@@ -151,10 +151,10 @@ class TestClientIntegration(object):
             'channel':
             CHANNEL
         })
-        has_event = client.get('client').events.get('message').wait(timeout=1)
+        has_event = client.get('client').events.get('message').wait(timeout=3)
         assert has_event
         del client.get('events_input')[:]
-        has_event = client.get('client').events.get('send').wait(timeout=1)
+        has_event = client.get('client').events.get('send').wait(timeout=3)
         assert has_event
         client.get('client').events.get('send').clear()
         assert client.get('rtm_read').call_count - read_count >= 1
@@ -173,6 +173,7 @@ class TestClientIntegration(object):
         """
         Test whether a simple chat to one bot goes as expected.
         """
+        self.query_bot(client, 'list')
         assert self.query_bot(client, 'list') == ('1. Interesting Facts\n'
                                                   '2. Strange Facts\n'
                                                   '3. Unusual Facts')

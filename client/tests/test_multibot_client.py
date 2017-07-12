@@ -188,14 +188,3 @@ class TestMultibotClient(object):
         client.close()
         t.join(timeout=3)
         assert not t.is_alive()
-
-    # def test_client_stopiteration_error(self, client, mocker):
-    #     """
-    #     Raising an AttributeError should not always be captured.
-    #     """
-
-    #     # Patch the get_response function to cause an AttributeError
-    #     mocker.patch.object(
-    #         client.bot, 'get_response', side_effect=AttributeError)
-    #     with pytest.raises(AttributeError):
-    #         client.start()

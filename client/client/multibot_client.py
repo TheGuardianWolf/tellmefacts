@@ -7,6 +7,7 @@ from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
 from client.services import EventManager
 from slackclient._slackrequest import SlackRequest
+from tempfile import TemporaryDirectory
 
 
 class MultibotClient(object):
@@ -28,9 +29,11 @@ class MultibotClient(object):
             self.patch_slack_requests(api_hostname)
         self.events = EventManager(['close'])
         self.slack_client = SlackClient(self.slack_api.get('bot_user_token'))
+        self.temp_folder = TemporaryDirectory()
         self.bot = ChatBot(
             'Multibot',
-            database=None,
+            database=path.join(self.temp_folder.name, 'client-db.json'),
+            storage_adapter='chatterbot.storage.JsonFileStorageAdapter',
             silence_performance_warning=True,  # Bot is read only anyway
             input_adapter=input_adapter,
             output_adapter=output_adapter,

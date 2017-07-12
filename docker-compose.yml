@@ -2,6 +2,7 @@ version: '3'
 services:
     client:
         build: client
+        # command: /bin/sh
         command: python3 run_client.py
         links:
             - dummybot

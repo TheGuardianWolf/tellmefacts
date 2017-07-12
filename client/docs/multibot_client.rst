@@ -7,6 +7,13 @@ Configuration is loaded from files from the config folder during initialisation.
 The input and output adapters can be switched out with others to connect the
 client to other services.
 
+.. note::
+    A temporary directory is used by the chatterbot instance this class creates,
+    as chatterbot does not function correctly without storage space. The JSON 
+    storage adapter is used, and a temporary JSON db is created. The bot is set 
+    to read only after one training statement is stored into the db. This
+    directory is typically deleted after the client exits.
+
 .. autoclass:: client.MultibotClient
    :members:
 
