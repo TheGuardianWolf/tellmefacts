@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+
+"""
+This is the launcher for the dummybot server.
+
+    usage: run_dummybot.py [-h] [--config-dir CONFIG_DIR]
+
+    Launches the dummybot server.
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    --config-dir CONFIG_DIR
+                            changes the config directory
+"""
+
 from dummybot import Server
 from argparse import ArgumentParser
 

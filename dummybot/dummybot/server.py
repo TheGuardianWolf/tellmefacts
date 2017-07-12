@@ -9,22 +9,34 @@ from .controllers import RandomResponse
 
 
 class Server(object):
-    # Values for server paths
+    """
+    A multibot relay client compatible bot server.
+    """
+
+    # Resolve file paths
     root = path.dirname(getfile(import_module('dummybot')))
     config_path = path.join(root, 'config')
 
     def __init__(self, config_path=config_path):
-        self.__config(config_path)
-        self.__setup()
+        self.config(config_path)
+        self.setup()
 
-    def __config(self, config_path):
+    def config(self, config_path):
+        """
+        Load configurations from config files.
+
+        :param config_path: Path to the config folder.
+        """
         environ.putenv('TZ', 'UTC')
+
+        # Set server to run on localhost and port 80
         self.server_config = {
             'server.socket_host': '0.0.0.0',
             'server.socket_port': 80,
             'request.show_tracebacks': False
         }
 
+        # Set dispatcher to be a RESTful method dispatcher
         self.route_config = {
             '/': {
                 'request.dispatch':
@@ -44,7 +56,10 @@ class Server(object):
             }
         }
 
+        # Set default responses
         responses = ['The sky is blue.', 'Water is wet.', 'Rocks are hard.']
+
+        # Try read configuration to replace default responses.
         try:
             fp = open(
                     path.join(config_path, 'responses.json'),
@@ -57,17 +72,23 @@ class Server(object):
             warn('No responses config loaded, using defaults.', Warning)
         self.responses = responses
 
-    def __setup(self):
+    def setup(self):
+        """
+        Set up the cherrypy routes.
+        """
         random_response = RandomResponse(self.responses)
         cherrypy.tree.mount(None, '/', config=self.route_config)
         cherrypy.tree.mount(
             random_response, '/askmeanything', config=self.route_config)
 
-    # a blocking call that starts the web application listening for requests
     def start(self):
+        """
+        Start server and block thread.
+        """
         cherrypy.config.update(self.server_config)
         cherrypy.engine.signal_handler.subscribe()
 
+        # Can't subscribe to console control in Docker as no TTY is started.
         try:
             cherrypy.engine.console_control_handler.subscribe()
         except AttributeError:
@@ -75,11 +96,13 @@ class Server(object):
 
         try:
             cherrypy.engine.start()
-        except:
+        except (KeyboardInterrupt, SystemExit):
             sys.exit(1)
         else:
             cherrypy.engine.block()
 
-    # stops the web application
     def stop(self):
+        """
+        Stop the cherrypy engine.
+        """
         cherrypy.engine.stop()
