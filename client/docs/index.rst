@@ -2,12 +2,12 @@
 tellmefacts Slack Bot Client
 ================
 
-The tellmefacts bot was created to multiplex chat conversations to multiple
+The tellmefacts client was created to multiplex chat conversations to multiple
 fact bots that use a supported API. Slack users are able to pick between
 configured bots by issuing commands to the bot, and subsequently chat with a
-connected bot. Essentially, the bot acts as a relay client to connected bots.
+connected bot. Essentially, the client acts as a relay client to connected bots.
 
-The bot must be mentioned via its bot user name as set in your Slack team, and
+The client must be mentioned via its bot user name as set in your Slack team, and
 moved into the channel that it is intended to be used in.
 
 An example of typical conversation would look like this:
@@ -33,9 +33,9 @@ processing chat messages. Custom input, output, and logic adapters were built
 to interact with chat messages from the Slack RTM API, using 
 `python-slackclient`_.
 
-The bot reads the input from the Slack RTM stream and processes any text that's
+The client reads the input from the Slack RTM stream and processes any text that's
 associated with a bot mention. If this text is a recognised command, some change
-is made to the bot's state (connecting/disconnecting to a bot). If not, it is
+is made to the client's state (connecting/disconnecting to a bot). If not, it is
 interpreted as a question to a connected bot, and a request for a response is
 made to the selected bot. The response is sent back to Slack via either RTM or
 Web API.
@@ -43,10 +43,10 @@ Web API.
 These adapters are suitable for use in any other chatterbot project as they
 inherit from the base chatterbot adapter classes.
 
-Bot keyword commands
+Client keyword commands
 ====================
 
-The bot accepts the following commands:
+The client accepts the following commands:
 
 **list**
 
@@ -100,10 +100,10 @@ Configuration
 ====================
 
 Configuration of Slack tokens and bot connections are done externally in a
-config folder. By default this is located in the bot's directory under the
+config folder. By default this is located in the client's directory under the
 folder :code:`config`. This can be changed easily through a launcher switch.
 
-The following config files are needed to run this bot:
+The following config files are needed to run this client:
 
 **bots.json** - configures bot urls and names.
 
@@ -134,7 +134,7 @@ The following config files are needed to run this bot:
 Running tests
 ====================
 
-Tests for the bot are written in pytest and use pytest-cov and pytest-mock
+Tests for the client are written in pytest and use pytest-cov and pytest-mock
 features. The easiest way to run tests is to open a shell at the app directory
 and run:
 
