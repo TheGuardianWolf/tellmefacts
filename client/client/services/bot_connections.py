@@ -20,9 +20,9 @@ class BotConnection(object):
         :returns: The response status and response text from the bot.
         """
         try:
-            response = get(self.url + '/askmeanything', timeout=1, params={
-                'q': question
-            })
+            response = get(self.url + '/askmeanything',
+                           timeout=1,
+                           params={'q': question})
 
             # Unpack the response
             response_text = response.json()['response']
@@ -36,6 +36,7 @@ class BotConnectionManager(object):
     """
     A collection class for `BotConnection`s.
     """
+
     def __init__(self, connection_list):
         self.connections = []
         for bot in connection_list:
@@ -43,12 +44,16 @@ class BotConnectionManager(object):
 
     def add(self, name, url):
         """
-        Send a message to the bot over this connection and parse the response.
+        Adds a new bot connection to the collection.
 
-        :param question: Question to ask the bot.
+        :param name: Name of the bot.
 
-        :returns: The response status and response text from the bot.
+        :param url: Url that the bot can be reached at.
         """
+        for bot in self.connections:
+            if bot.name == name:
+                raise ValueError(
+                    'Bot name \'{}\' already exists.'.format(name))
         self.connections.append(BotConnection(name, url))
 
     def get(self, name):

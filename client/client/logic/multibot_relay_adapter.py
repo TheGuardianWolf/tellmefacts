@@ -1,7 +1,6 @@
 from chatterbot.logic import LogicAdapter
 from chatterbot.conversation import Statement
-from client.services import (KeywordManager, BotConnectionManager, RelayState,
-                             KeywordCommand)
+from client.services import (KeywordManager, BotConnectionManager, Keyword)
 
 
 class MultibotRelayAdapter(LogicAdapter):
@@ -14,7 +13,7 @@ class MultibotRelayAdapter(LogicAdapter):
 
         bot_connections = kwargs.get('bot_connections', [])
 
-        self.state = RelayState()
+        self.state = self.RelayState()
         self.bot_connections = BotConnectionManager(bot_connections)
         self.keywords = KeywordManager([{
             'type': 'command',
@@ -50,7 +49,7 @@ class MultibotRelayAdapter(LogicAdapter):
         response_statement.confidence = 0
 
         # Look for a keyword command pattern match
-        result = KeywordCommand.match(statement.text)
+        result = self.KeywordCommand.match(statement.text)
 
         # Possible command
         if result is not None:
@@ -163,3 +162,35 @@ class MultibotRelayAdapter(LogicAdapter):
             bot_name = self.state.bot.name
             self.state.bot = None
             return 'Chat session with {} ended.'.format(bot_name)
+
+    class RelayState(object):
+        """
+        Represents the current state of a relay object.
+        """
+
+        def __init__(self):
+            self.bot = None  # Currently connected bot `BotConnection`
+
+    class KeywordCommand(Keyword):
+        """
+        Represents a command that can be intercepted from a message. Commands
+        are intended to modify operation of the bot in some way.
+        """
+
+        command_regexp = compile('^([^ ]+) ?(.*)$')  # Command regex pattern
+
+        @classmethod
+        def match(self, test):
+            """
+            Check if a test string matches the command pattern
+
+            :param test: A text string to test.
+
+            :returns: Return value of a regex match with the command pattern.
+            """
+            return self.command_regexp.match(test)
+
+        def __init__(self, keyword, has_args, handler, **kwargs):
+            super(MultibotRelayAdapter.KeywordCommand, self).__init__(
+                keyword, has_args, handler)
+            self.session_ignore = kwargs.get('session_ignore', False)

@@ -36,52 +36,6 @@ class TestKeyword(object):
 
 
 @pytest.fixture()
-def keyword_command():
-    """
-    Create a keyword command object.
-    """
-    return KeywordCommand(**{
-        'keyword': 'test',
-        'has_args': False,
-        'session_ignore': False,
-        'handler': None
-    })
-
-
-class TestKeywordCommand(object):
-    def test_keyword_command(self, keyword_command):
-        """
-        Test object attributes.
-        """
-        assert not keyword_command.session_ignore
-
-    def test_match_has_args(self):
-        """
-        Test match against the regex pattern when the string has arguments.
-        """
-        result = KeywordCommand.match('command args')
-        assert len(result.groups()) == 2
-        assert result.group(1) == 'command'
-        assert result.group(2) == 'args'
-
-    def test_match_no_args(self):
-        """
-        Test match against the regex pattern when the string has no arguments.
-        """
-        result = KeywordCommand.match('command')
-        assert len(result.groups()) == 2
-        assert result.group(1) == 'command'
-        assert result.group(2) == ''
-
-    def test_match_invalid(self):
-        """
-        Test match against the regex pattern when the string is empty.
-        """
-        result = KeywordCommand.match('')
-        assert result is None
-
-
-@pytest.fixture()
 def keyword_manager():
     """
     Create a keyword manager object.

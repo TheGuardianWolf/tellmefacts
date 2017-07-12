@@ -28,44 +28,21 @@ class Keyword(object):
             return self.handler()
 
 
-class KeywordCommand(Keyword):
-    """
-    Represents a command that can be intercepted from a message. Commands
-    are intended to modify operation of the bot in some way.
-    """
-
-    command_regexp = compile('^([^ ]+) ?(.*)$')  # Command regex pattern
-
-    @classmethod
-    def match(self, test):
-        """
-        Check if a test string matches the command pattern
-
-        :param test: A text string to test.
-
-        :returns: Return value of a regex match with the command pattern.
-        """
-        return self.command_regexp.match(test)
-
-    def __init__(self, keyword, has_args, handler, **kwargs):
-        super(KeywordCommand, self).__init__(keyword, has_args, handler)
-        self.session_ignore = kwargs.get('session_ignore', False)
-
-
 class KeywordManager(object):
     """
     A collection class for `Keyword`s.
     """
+
     def __init__(self, keywords_list):
         self.keywords = []
         for keyword in keywords_list:
             self.add(**keyword)
 
-    def add(self, type, keyword, has_args, handler, **kwargs):
+    def add(self, keyword_type, keyword, has_args, handler, **kwargs):
         """
         Add a `Keyword` to the collection.
 
-        :param type: Type of keyword to add.
+        :param keyword_type: Type of keyword to add.
 
         :param keyword: The keyword string.
 
@@ -82,11 +59,13 @@ class KeywordManager(object):
             if word.keyword == keyword:
                 raise ValueError('Keyword already exists')
 
-        # Check for a known keyword type
-        if type == 'command':
-            keyword = KeywordCommand(keyword, has_args, handler, **kwargs)
+        # Check for a keyword type
+        if issubclass(keyword_type, Keyword):
+            keyword = keyword_type(
+                keyword=keyword, has_args=has_args, handler=handler, **kwargs)
         else:
-            raise ValueError('No keyword type of \'{}\' exists'.format(type))
+            raise ValueError(
+                'No keyword type of \'{}\' exists'.format(keyword_type))
 
         self.keywords.append(keyword)
 

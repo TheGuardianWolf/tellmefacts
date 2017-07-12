@@ -2,6 +2,7 @@
 import pytest
 from chatterbot.conversation import Statement
 from client.logic import MultibotRelayAdapter
+from client.services import BotConnectionManager, KeywordManager
 
 
 @pytest.fixture()
@@ -20,6 +21,27 @@ def multibot_adapter():
         'url': 'http://dummybot_3'
     }]
     return MultibotRelayAdapter(bot_connections=bot_connections)
+
+
+@pytest.fixture()
+def relay_state():
+    """
+    Create a relay state object.
+    """
+    return MultibotRelayAdapter.RelayState()
+
+
+@pytest.fixture()
+def keyword_command():
+    """
+    Create a keyword command object.
+    """
+    return MultibotRelayAdapter.KeywordCommand(**{
+        'keyword': 'test',
+        'has_args': False,
+        'session_ignore': False,
+        'handler': None
+    })
 
 
 class TestMultibotRelayAdapter(object):
@@ -63,6 +85,17 @@ class TestMultibotRelayAdapter(object):
             assert response_statement.text == match
 
         return response_statement
+
+    from client.services import RelayState, BotConnection
+
+    def test_multibot_relay_adapter(self, multibot_adapter):
+        """
+        Test object attributes.
+        """
+        assert isinstance(multibot_adapter.state, multibot_adapter.RelayState)
+        assert isinstance(multibot_adapter.bot_connections,
+                          BotConnectionManager)
+        assert isinstance(multibot_adapter.keywords, KeywordManager)
 
     def test_list(self, multibot_adapter):
         """
@@ -320,3 +353,45 @@ class TestMultibotRelayAdapter(object):
             Statement('end_session'),
             confidence=1,
             match='You are currently not in an active session.')
+
+    class TestRelayState(object):
+        def test_relay_state(self, multibot_adapter, relay_state):
+            """
+            Test RelayState attributes.
+            """
+            bc = multibot_adapter.bot_connections.get('test_bot_2')
+            relay_state.bot = bc
+            assert relay_state.bot is bc
+
+    class TestKeywordCommand(object):
+        def test_keyword_command(self, keyword_command):
+            """
+            Test object attributes.
+            """
+            assert not keyword_command.session_ignore
+
+        def test_match_has_args(self, keyword_command):
+            """
+            Test match against the regex pattern when the string has arguments.
+            """
+            result = keyword_command.match('command args')
+            assert len(result.groups()) == 2
+            assert result.group(1) == 'command'
+            assert result.group(2) == 'args'
+
+        def test_match_no_args(self, keyword_command):
+            """
+            Test match against the regex pattern when the string has no
+            arguments.
+            """
+            result = keyword_command.match('command')
+            assert len(result.groups()) == 2
+            assert result.group(1) == 'command'
+            assert result.group(2) == ''
+
+        def test_match_invalid(self, keyword_command):
+            """
+            Test match against the regex pattern when the string is empty.
+            """
+            result = keyword_command.match('')
+            assert result is None
