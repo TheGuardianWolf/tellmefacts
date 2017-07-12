@@ -1,6 +1,7 @@
 from chatterbot.logic import LogicAdapter
 from chatterbot.conversation import Statement
 from client.services import (KeywordManager, BotConnectionManager, Keyword)
+from re import compile
 
 
 class MultibotRelayAdapter(LogicAdapter):
@@ -16,19 +17,19 @@ class MultibotRelayAdapter(LogicAdapter):
         self.state = self.RelayState()
         self.bot_connections = BotConnectionManager(bot_connections)
         self.keywords = KeywordManager([{
-            'type': 'command',
+            'type': self.KeywordCommand,
             'keyword': 'list',
             'has_args': False,
             'session_ignore': False,
             'handler': self.list
         }, {
-            'type': 'command',
+            'type': self.KeywordCommand,
             'keyword': 'start_session',
             'has_args': True,
             'session_ignore': False,
             'handler': self.start_session
         }, {
-            'type': 'command',
+            'type': self.KeywordCommand,
             'keyword': 'end_session',
             'has_args': False,
             'session_ignore': False,

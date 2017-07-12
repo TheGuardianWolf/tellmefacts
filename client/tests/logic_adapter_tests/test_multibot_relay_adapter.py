@@ -86,8 +86,6 @@ class TestMultibotRelayAdapter(object):
 
         return response_statement
 
-    from client.services import RelayState, BotConnection
-
     def test_multibot_relay_adapter(self, multibot_adapter):
         """
         Test object attributes.

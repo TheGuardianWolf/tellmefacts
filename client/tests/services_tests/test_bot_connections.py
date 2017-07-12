@@ -69,6 +69,10 @@ class TestBotConnectionManager(object):
         assert len(bot_connection_manager.connections) == 2
         assert isinstance(bot_connection_manager.connections[1], BotConnection)
 
+        # Adding a bot connection that exists should raise an error
+        with pytest.raises(ValueError):
+            bot_connection_manager.add('added', 'http://added')
+
     def test_get(self, bot_connection_manager):
         """
         Test retrieving a bot connection from the collection.

@@ -54,6 +54,6 @@ class TestEventManager(object):
         event_manager.add('test')
         assert isinstance(event_manager.get('test'), DataEvent)
 
-        # Adding an event type that exists should return an error
+        # Adding an event type that exists should raise an error
         with pytest.raises(ValueError):
             event_manager.add('test')

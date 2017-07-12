@@ -7,7 +7,6 @@ from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
 from client.services import EventManager
 from slackclient._slackrequest import SlackRequest
-from sys import exit
 
 
 class MultibotClient(object):

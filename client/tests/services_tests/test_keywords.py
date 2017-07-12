@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from client.services import Keyword, KeywordCommand, KeywordManager
+from client.services import Keyword, KeywordManager
 
 
 @pytest.fixture(params=[True, False], ids=['has_args', 'no_args'])
@@ -41,10 +41,9 @@ def keyword_manager():
     Create a keyword manager object.
     """
     return KeywordManager([{
-        'type': 'command',
+        'type': Keyword,
         'keyword': 'test',
         'has_args': False,
-        'session_ignore': False,
         'handler': None
     }])
 
@@ -55,23 +54,21 @@ class TestKeywordManager(object):
         Test object attributes.
         """
         assert len(keyword_manager.keywords) == 1
-        assert isinstance(keyword_manager.keywords[0], KeywordCommand)
-        assert not keyword_manager.keywords[0].session_ignore
+        assert isinstance(keyword_manager.keywords[0], Keyword)
 
     def test_add(self, keyword_manager):
         """
         Test adding a new command to the collection.
         """
         keyword_manager.add(
-            'command', 'test_2', False, None, session_ignore=False)
+            Keyword, 'test_2', False, None)
         assert len(keyword_manager.keywords) == 2
-        assert isinstance(keyword_manager.keywords[1], KeywordCommand)
-        assert not keyword_manager.keywords[1].session_ignore
+        assert isinstance(keyword_manager.keywords[1], Keyword)
 
         # Adding another keyword with the same keyword should raise an error
         with pytest.raises(ValueError):
             keyword_manager.add(
-                'command', 'test_2', False, None, session_ignore=False)
+                Keyword, 'test_2', False, None)
 
     def test_add_invalid(self, keyword_manager):
         """
@@ -80,13 +77,13 @@ class TestKeywordManager(object):
         # Adding a keyword with an unrecognised type should raise an error
         with pytest.raises(ValueError):
             keyword_manager.add(
-                'invalid', 'test_2', False, None, session_ignore=False)
+                KeywordManager, 'test_2', False, None)
 
     def test_get(self, keyword_manager):
         """
         Test retrieving a keyword from the collection.
         """
         command = keyword_manager.get('test')
-        assert isinstance(command, KeywordCommand)
+        assert isinstance(command, Keyword)
         assert command.keyword == 'test'
         assert keyword_manager.get('none') is None

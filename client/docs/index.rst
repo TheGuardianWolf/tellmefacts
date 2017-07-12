@@ -172,13 +172,6 @@ Report an issue
 Please direct all bug reports and feature requests to the project's issue
 tracker on `GitHub`_.
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 .. _GitHub: https://github.com/TheGuardianWolf/tellmefacts/issues/
 .. _Sphinx: http://www.sphinx-doc.org
 .. _ChatterBot: https://github.com/gunthercox/ChatterBot

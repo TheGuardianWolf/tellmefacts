@@ -1,6 +1,3 @@
-from re import compile
-
-
 class Keyword(object):
     """
     Represents a keyword that can be intercepted from a message.
@@ -38,7 +35,7 @@ class KeywordManager(object):
         for keyword in keywords_list:
             self.add(**keyword)
 
-    def add(self, keyword_type, keyword, has_args, handler, **kwargs):
+    def add(self, type, keyword, has_args, handler, **kwargs):
         """
         Add a `Keyword` to the collection.
 
@@ -60,12 +57,12 @@ class KeywordManager(object):
                 raise ValueError('Keyword already exists')
 
         # Check for a keyword type
-        if issubclass(keyword_type, Keyword):
-            keyword = keyword_type(
+        if issubclass(type, Keyword):
+            keyword = type(
                 keyword=keyword, has_args=has_args, handler=handler, **kwargs)
         else:
             raise ValueError(
-                'No keyword type of \'{}\' exists'.format(keyword_type))
+                'No keyword type of \'{}\' exists'.format(type))
 
         self.keywords.append(keyword)
 
