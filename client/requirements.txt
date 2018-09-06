@@ -1,5 +1,5 @@
 requests
-chatterbot
+chatterbot==0.7.3
 pytest
 pytest-mock
 pytest-cov

@@ -32,8 +32,8 @@ class MultibotClient(object):
         self.temp_folder = TemporaryDirectory()
         self.bot = ChatBot(
             'Multibot',
-            database=path.join(self.temp_folder.name, 'client-db.sqlite'),
-            storage_adapter='chatterbot.storage.SQLStorageAdapter',
+            database=path.join(self.temp_folder.name, 'client-db.json'),
+            storage_adapter='chatterbot.storage.JsonFileStorageAdapter',
             silence_performance_warning=True,  # Bot is read only anyway
             input_adapter=input_adapter,
             output_adapter=output_adapter,
