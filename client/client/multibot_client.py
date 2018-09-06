@@ -6,7 +6,7 @@ from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
 from client.services import EventManager
-from slackclient._slackrequest import SlackRequest
+from slackclient.slackrequest import SlackRequest
 from tempfile import TemporaryDirectory
 
 

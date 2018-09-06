@@ -67,7 +67,7 @@ class TestMultibotClient(object):
         """
         # Patch required objects for requests
         m_post = mocker.patch(
-            'slackclient._slackrequest.requests.post',
+            'slackclient.slackrequest.requests.post',
             return_value=mocker.Mock(text='{"ok":true}'))
 
         # Function to check the post request parameters are as expected
