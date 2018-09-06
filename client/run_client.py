@@ -13,8 +13,6 @@ This is the launcher for the multibot-client application.
     -h, --help            show this help message and exit
     --config-dir CONFIG_DIR
                             changes the config directory
-    --api-hostname API_HOSTNAME
-                            sets a hostname other than slack.com
     --terminal            set bot to run in terminal mode
     --verbose             display all logging information on terminal
 """
@@ -31,11 +29,6 @@ def main():
         dest='config_dir',
         action='store',
         help='changes the config directory')
-    parser.add_argument(
-        '--api-hostname',
-        dest='api_hostname',
-        action='store',
-        help='sets a hostname other than slack.com')
     parser.add_argument(
         '--terminal',
         dest='terminal',
@@ -55,9 +48,6 @@ def main():
 
     if args.config_dir is not None:
         client_args['config_path'] = args.config_dir
-
-    if args.api_hostname is not None:
-        client_args['api_hostname'] = args.api_hostname
 
     if args.verbose:
         logging.basicConfig(level=logging.INFO)

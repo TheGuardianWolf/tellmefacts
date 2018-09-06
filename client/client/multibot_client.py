@@ -6,7 +6,7 @@ from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from slackclient import SlackClient
 from client.services import EventManager
-from slackclient.slackrequest import SlackRequest
+# from slackclient.slackrequest import SlackRequest
 from tempfile import TemporaryDirectory
 
 
@@ -22,11 +22,11 @@ class MultibotClient(object):
     def __init__(self,
                  config_path=config_path,
                  input_adapter='client.input.Slack',
-                 output_adapter='client.output.Slack',
-                 api_hostname=None):
+                 output_adapter='client.output.Slack'):
+                 #  api_hostname=None):
         self.config(config_path, input_adapter, output_adapter)
-        if api_hostname is not None:
-            self.patch_slack_requests(api_hostname)
+        # if api_hostname is not None:
+        #     self.patch_slack_requests(api_hostname)
         self.events = EventManager(['close'])
         self.slack_client = SlackClient(self.slack_api.get('bot_user_token'))
         self.temp_folder = TemporaryDirectory()
@@ -77,30 +77,30 @@ class MultibotClient(object):
             self.slack_api = loads(fp.read())
             fp.close()
 
-    def patch_slack_requests(self, api_hostname):
-        """
-        Patch the slack requests module to send to a host other than slack.com
+    # def patch_slack_requests(self, api_hostname):
+    #     """
+    #     Patch the slack requests module to send to a host other than slack.com
 
-        :param api_hostname: A valid hostname (e.g. slack.com).
-        """
-        try:
-            # See if there's a stored version of the orignal method
-            slack_client_do = self.__slack_client_do
-        except AttributeError:
-            # Store unpatched method
-            self.__slack_client_do = SlackRequest.do
-            slack_client_do = SlackRequest.do
+    #     :param api_hostname: A valid hostname (e.g. slack.com).
+    #     """
+    #     try:
+    #         # See if there's a stored version of the orignal method
+    #         slack_client_do = self.__slack_client_do
+    #     except AttributeError:
+    #         # Store unpatched method
+    #         self.__slack_client_do = SlackRequest.do
+    #         slack_client_do = SlackRequest.do
 
-        def patched_do(obj,
-                       token,
-                       request="?",
-                       post_data=None,
-                       domain=api_hostname,
-                       timeout=None):
-            return slack_client_do(obj, token, request, post_data, domain,
-                                   timeout)
+    #     def patched_do(obj,
+    #                    token,
+    #                    request="?",
+    #                    post_data=None,
+    #                    domain=api_hostname,
+    #                    timeout=None):
+    #         return slack_client_do(obj, token, request, post_data, domain,
+    #                                timeout)
 
-        SlackRequest.do = patched_do
+    #     SlackRequest.do = patched_do
 
     def start(self):
         """

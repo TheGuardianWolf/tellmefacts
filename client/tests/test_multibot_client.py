@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
-from chatterbot.conversation import Statement
-from slackclient import SlackClient
+# from chatterbot.conversation import Statement
+# from slackclient import SlackClient
 from client import MultibotClient
 from random import randint
 from json import dumps
@@ -39,8 +39,7 @@ def client(tmpdir, mocker):
     c = MultibotClient(
         config_path=tmpdir,
         input_adapter='chatterbot.input.VariableInputTypeAdapter',
-        output_adapter='chatterbot.output.OutputAdapter',
-        api_hostname='localhost')
+        output_adapter='chatterbot.output.OutputAdapter')
     yield c
 
     # Cleanup with the close function
@@ -60,45 +59,45 @@ class TestMultibotClient(object):
         """
         return str(randint(start, end))
 
-    def test_patch_slack_requests(self, client, mocker):
-        """
-        Test whether a request is sent to a different hostname after patching
-        the Slack Requests class.
-        """
-        # Patch required objects for requests
-        m_post = mocker.patch(
-            'slackclient.slackrequest.requests.post',
-            return_value=mocker.Mock(text='{"ok":true}'))
+    # def test_patch_slack_requests(self, client, mocker):
+    #     """
+    #     Test whether a request is sent to a different hostname after patching
+    #     the Slack Requests class.
+    #     """
+    #     # Patch required objects for requests
+    #     m_post = mocker.patch(
+    #         'slackclient.slackrequest.requests.post',
+    #         return_value=mocker.Mock(text='{"ok":true}'))
 
-        # Function to check the post request parameters are as expected
-        def check_slack_request(hostname):
-            assert m_post.called
-            args, kwargs = m_post.call_args
-            assert args[0] == 'https://{0}/api/{1}'.format(hostname,
-                                                           'chat.postMessage')
-            assert 'user-agent' in kwargs.get('headers')
-            assert kwargs.get('data').get('channel') == '#general'
-            assert kwargs.get('data').get('text') == 'test'
-            assert kwargs.get('data').get(
-                'token') == 'xoxp-1234123412341234-12341234-1234'
-            assert kwargs.get('files') is None
-            assert kwargs.get('timeout') is None
-            assert kwargs.get('proxies') is None
+    #     # Function to check the post request parameters are as expected
+    #     def check_slack_request(hostname):
+    #         assert m_post.called
+    #         args, kwargs = m_post.call_args
+    #         assert args[0] == 'https://{0}/api/{1}'.format(hostname,
+    #                                                        'chat.postMessage')
+    #         assert 'user-agent' in kwargs.get('headers')
+    #         assert kwargs.get('data').get('channel') == '#general'
+    #         assert kwargs.get('data').get('text') == 'test'
+    #         assert kwargs.get('data').get(
+    #             'token') == 'xoxp-1234123412341234-12341234-1234'
+    #         assert kwargs.get('files') is None
+    #         assert kwargs.get('timeout') is None
+    #         assert kwargs.get('proxies') is None
 
-        # Send a message via slack api call (slackclient's request class was
-        # patched in fixture)
-        sc = SlackClient('xoxp-1234123412341234-12341234-1234')
-        sc.api_call('chat.postMessage', text='test', channel='#general')
+    #     # Send a message via slack api call (slackclient's request class was
+    #     # patched in fixture)
+    #     sc = SlackClient('xoxp-1234123412341234-12341234-1234')
+    #     sc.api_call('chat.postMessage', text='test', channel='#general')
 
-        # Check now
-        check_slack_request('localhost')
+    #     # Check now
+    #     check_slack_request('localhost')
 
-        # Try patch to another hostname
-        client.patch_slack_requests('localhost:8080')
-        sc.api_call('chat.postMessage', text='test', channel='#general')
+    #     # Try patch to another hostname
+    #     client.patch_slack_requests('localhost:8080')
+    #     sc.api_call('chat.postMessage', text='test', channel='#general')
 
-        # Check again
-        check_slack_request('localhost:8080')
+    #     # Check again
+    #     check_slack_request('localhost:8080')
 
     def test_simple_chat(self, client, mocker):
         """
